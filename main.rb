@@ -95,17 +95,13 @@ menu_opt_tools.add :command, :label => 'Wipe out list', :command => proc{
   refresh_list
 }
 
-
-# About
-menu_opt_about = TkMenu.new($menubar)
-$menubar.add :command, :label => 'About', :command => proc{
-  show_msg('About', 'Stuff', $top_window)
-}
-
 # Help
 menu_opt_help = TkMenu.new($menubar)
-$menubar.add :command, :label => '?', :command => proc{
-  show_msg('Help', 'Some help here', $top_window)
+$menubar.add :cascade, :menu => menu_opt_help, :label => 'Help'
+
+## About
+menu_opt_help.add :command, :label => 'About', :command => proc{
+  show_msg('About', 'Stuff', $top_window)
 }
 
 #####################
