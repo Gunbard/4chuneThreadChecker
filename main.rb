@@ -336,6 +336,7 @@ end
 def add_thread(thread_item)
   $thread_data.push(thread_item)
   refresh_list
+  save_threads
 end
 
 # Deletes a thread item in the thread data array
@@ -420,7 +421,7 @@ def refresh_info(index)
 end
 
 # Clears the display info
-def clear_info
+def clear_info()
   $url_label['textvariable'].value          = ''
   $board_label['textvariable'].value        = ''
   $date_label['textvariable'].value         = ''
@@ -434,7 +435,32 @@ def clear_info
   $enabled_check.state                      = 'disabled'
 end
 
+# Save $thread_data to file
+def save_threads()
+  thread_savefile = File.open(SAVED_THREADS_FILENAME, 'w')
+  thread_savefile << Marshal.dump($thread_data)
+  thread_savefile.close
+end
+
+# Load thread data from file
+def load_threads()
+  begin
+    thread_savedata = File.read(SAVED_THREADS_FILENAME)
+  rescue
+    puts "Didn't find thread list savedata"
+    return
+  end
+  
+  saved_thread_data = Marshal.load(thread_savedata)
+end
+
 #####################################################
+
+#####################
+# Constants
+#####################
+SAVED_THREADS_FILENAME = 'threads.dat' 
+SAVED_SETTINGS_FILENAME = 'settings.dat' 
 
 #####################
 # Global vars
@@ -442,7 +468,7 @@ end
 
 # Data source containing threadItems
 $thread_data = []
-$save_load_directory = ''
+$save_load_directory = Dir.pwd
 
 #########################################
 # [MAIN]
