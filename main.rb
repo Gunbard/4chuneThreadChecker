@@ -73,6 +73,26 @@ menu_opt_tools.add :command, :label => 'Clean list', :command => proc{
   if response == 'no'
     next
   end
+  
+  clean_list
+}
+
+## Wipe
+menu_opt_tools.add :command, :label => 'Wipe out list', :command => proc{
+  response = Tk.messageBox ({
+    :type    => 'yesno',  
+    :icon    => 'question', 
+    :title   => 'Wipe out list?',
+    :message => 'This will completely remove ALL threads from your list. Are you sure?',
+    :parent  => $top_window
+  })
+  
+  if response == 'no'
+    next
+  end
+  
+  $thread_data = []
+  refresh_list
 }
 
 
@@ -437,6 +457,13 @@ def clear_info()
   $status_label['textvariable'].value       = ''
   
   $enabled_check.state                      = 'disabled'
+end
+
+# Goes through $thread_data and deletes deleted threads
+def clean_list()
+  $thread_data.delete_if {|thread_item| thread_item.deleted}
+  refresh_list
+  save_threads
 end
 
 # Save $thread_data to file
