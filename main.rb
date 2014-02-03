@@ -47,6 +47,8 @@ $menubar.add :cascade, :menu => menu_opt_file, :label => 'File'
 ## Settings
 menu_opt_file.add :command, :label => 'Settings', :command => 
 proc{
+  $save_load_label['textvariable'].value = File.split($save_load_directory)[1]
+
   $settings_window.deiconify()
   $settings_window.grab
 }
@@ -343,6 +345,7 @@ end
 def delete_thread(thread_item)
   $thread_data.delete(thread_item)
   refresh_list
+  save_threads
 end
 
 # Updates latest data for all threads in list
@@ -374,6 +377,7 @@ def refresh()
   end
   
   refresh_list
+  save_threads
 end
 
 # Refreshes the listbox of threads
@@ -437,21 +441,26 @@ end
 
 # Save $thread_data to file
 def save_threads()
-  thread_savefile = File.open(SAVED_THREADS_FILENAME, 'w')
+  thread_savefile = File.open("#{$save_load_directory}/#{SAVED_THREADS_FILENAME}", 'w')
   thread_savefile << Marshal.dump($thread_data)
   thread_savefile.close
+  puts 'Saved thread data to file'
 end
 
 # Load thread data from file
 def load_threads()
   begin
-    thread_savedata = File.read(SAVED_THREADS_FILENAME)
+    thread_savedata = File.read("#{$save_load_directory}/#{SAVED_THREADS_FILENAME}")
   rescue
     puts "Didn't find thread list savedata"
     return
   end
   
   saved_thread_data = Marshal.load(thread_savedata)
+  $thread_data = saved_thread_data
+  refresh_list
+  
+  puts 'Loaded saved thread data'
 end
 
 #####################################################
@@ -468,10 +477,14 @@ SAVED_SETTINGS_FILENAME = 'settings.dat'
 
 # Data source containing threadItems
 $thread_data = []
+
+# Default save directory is working directory
 $save_load_directory = Dir.pwd
 
 #########################################
 # [MAIN]
 #########################################
+
+load_threads
 
 Tk.mainloop
