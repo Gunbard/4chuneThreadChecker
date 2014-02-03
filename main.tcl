@@ -290,9 +290,9 @@ proc vTclWindow. {base} {
     # CREATING WIDGETS
     ###################
     wm focusmodel $top passive
-    wm geometry $top 200x200+24+24; update
-    wm maxsize $top 5762 1061
-    wm minsize $top 112 1
+    wm geometry $top 200x200+104+104; update
+    wm maxsize $top 1916 1053
+    wm minsize $top 124 1
     wm overrideredirect $top 0
     wm resizable $top 1 1
     wm withdraw $top
@@ -443,12 +443,13 @@ proc vTclWindow.top45 {base} {
         -in $top -x 5 -y 45 -width 154 -height 179 -anchor nw \
         -bordermode ignore 
     place $top.ent47 \
-        -in $top -x 160 -y 10 -width 159 -height 22 -anchor nw \
+        -in $top -x 170 -y 10 -width 149 -height 22 -anchor nw \
         -bordermode ignore 
     place $top.but49 \
-        -in $top -x 330 -y 5 -anchor nw -bordermode ignore 
+        -in $top -x 320 -y 5 -width 73 -height 29 -anchor nw \
+        -bordermode ignore 
     place $top.but50 \
-        -in $top -x 35 -y 230 -width 87 -height 30 -anchor nw \
+        -in $top -x 35 -y 235 -width 87 -height 30 -anchor nw \
         -bordermode ignore 
     place $top.lab55 \
         -in $top -x 185 -y 60 -width 220 -height 60 -anchor nw \
@@ -466,7 +467,7 @@ proc vTclWindow.top45 {base} {
         -in $top -x 245 -y 120 -width 55 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.but64 \
-        -in $top -x 205 -y 230 -width 164 -height 30 -anchor nw \
+        -in $top -x 205 -y 235 -width 164 -height 30 -anchor nw \
         -bordermode ignore 
     place $top.lab65 \
         -in $top -x 305 -y 170 -width 100 -height 50 -anchor nw \
@@ -478,7 +479,8 @@ proc vTclWindow.top45 {base} {
         -in $top -x 15 -y 265 -width 392 -height 24 -anchor nw \
         -bordermode ignore 
     place $top.but72 \
-        -in $top -x 5 -y 5 -anchor nw -bordermode ignore 
+        -in $top -x 35 -y 5 -width 88 -height 29 -anchor nw \
+        -bordermode ignore 
     place $top.che45 \
         -in $top -x 180 -y 35 -anchor nw -bordermode ignore 
     place $top.lab56 \
@@ -593,6 +595,64 @@ bind "_TopLevel" <Destroy> {
 
 
 if {![info exists vTcl(sourcing)]} {
+bind "_vTclBalloon" <<KillBalloon>> {
+    namespace eval ::vTcl::balloon {
+        after cancel $id
+        if {[winfo exists .vTcl.balloon]} {
+            destroy .vTcl.balloon
+        }
+        set set 0
+    }
+}
+bind "_vTclBalloon" <<vTclBalloon>> {
+    if {$::vTcl::balloon::first != 1} {break}
+
+    namespace eval ::vTcl::balloon {
+        set first 2
+        if {![winfo exists .vTcl]} {
+            toplevel .vTcl; wm withdraw .vTcl
+        }
+        if {![winfo exists .vTcl.balloon]} {
+            toplevel .vTcl.balloon -bg black
+        }
+        wm overrideredirect .vTcl.balloon 1
+        label .vTcl.balloon.l  -text ${%W} -relief flat  -bg #ffffaa -fg black -padx 2 -pady 0 -anchor w
+        pack .vTcl.balloon.l -side left -padx 1 -pady 1
+        wm geometry  .vTcl.balloon  +[expr {[winfo rootx %W]+[winfo width %W]/2}]+[expr {[winfo rooty %W]+[winfo height %W]+4}]
+        set set 1
+    }
+}
+bind "_vTclBalloon" <Button> {
+    namespace eval ::vTcl::balloon {
+        set first 0
+    }
+    vTcl:FireEvent %W <<KillBalloon>>
+}
+bind "_vTclBalloon" <Enter> {
+    namespace eval ::vTcl::balloon {
+        ## self defining balloon?
+        if {![info exists %W]} {
+            vTcl:FireEvent %W <<SetBalloon>>
+        }
+        set set 0
+        set first 1
+        set id [after 500 {vTcl:FireEvent %W <<vTclBalloon>>}]
+    }
+}
+bind "_vTclBalloon" <Leave> {
+    namespace eval ::vTcl::balloon {
+        set first 0
+    }
+    vTcl:FireEvent %W <<KillBalloon>>
+}
+bind "_vTclBalloon" <Motion> {
+    namespace eval ::vTcl::balloon {
+        if {!$set} {
+            after cancel $id
+            set id [after 500 {vTcl:FireEvent %W <<vTclBalloon>>}]
+        }
+    }
+}
 }
 
 Window show .
