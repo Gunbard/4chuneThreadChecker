@@ -168,6 +168,7 @@ $add_thread_button.command = proc{
     add_thread(new_thread_item)
     $add_thread_entry.textvariable.value = ''
   else
+    show_msg('Error', "Thread seems to have 404'd already.", $top_window)
     $add_thread_button.state = 'normal'
   end
 }
@@ -312,6 +313,8 @@ def get_thread(url)
       title = thread_data['subject']
     elsif thread_data['com']
       title = thread_data['com']
+    elsif thread_data['filename']
+      title = thread_data['filename']
     end
     
     # Strip html
@@ -348,6 +351,10 @@ def refresh()
   # TODO: Perform on new thread
   # TODO: Prevent adding new stuff while this is running
   $thread_data.each_with_index do |thread_item, index|
+    unless thread_item.enabled && !thread_item.deleted
+      next
+    end
+    
     updated_thread_item = get_thread(thread_item.url)
     if updated_thread_item
       new_posts = updated_thread_item.replies - thread_item.replies
@@ -404,9 +411,12 @@ def refresh_info(index)
   if thread_item.deleted
     $status_label['textvariable'].value = 'Deleted'
     $status_label['foreground']         = '#FF0000'
+    $enabled_check.state                = 'disabled'
+  else
+    $status_label['textvariable'].value = ''
+    $enabled_check.state                = 'normal'
   end
   
-  $enabled_check.state                  = 'normal'
 end
 
 # Clears the display info
