@@ -21,6 +21,7 @@ $settings_window = root.winfo_children[1]
 
 # Event handler for window close
 $top_window.protocol(:WM_DELETE_WINDOW) { 
+  # TODO: Clean up if in process of refreshing
   if defined?(Ocra)
     exit # Don't want to kill when building
   else
@@ -398,13 +399,17 @@ end
 # This method iterates through thread_data and requests
 # for the latest data.
 def refresh()  
-  if $thread_data.length == 0
+  # Don't refresh if no threads or currently refreshing
+  if $thread_data.length == 0 || $refresh_button.state == 'disabled'
     return
   end
   
   # Disable buttons
   $refresh_button.state = 'disabled'
   $add_thread_button.state = 'disabled'
+  
+  # Reload saved data in the event it changed
+  load_threads
   
   $thread_data.each_with_index do |thread_item, index|
     unless thread_item.enabled && !thread_item.deleted
@@ -539,7 +544,7 @@ end
 
 # Save $settings to file
 def save_settings()
-  settings_savefile = File.open("#{$settings['save_load_directory']}/#{SAVED_SETTINGS_FILENAME}", 'wb')
+  settings_savefile = File.open("#{SAVED_SETTINGS_FILENAME}", 'wb')
   settings_savefile << Marshal.dump($settings)
   settings_savefile.close
   puts 'Saved settings to file'
@@ -548,7 +553,7 @@ end
 # Load settings from file
 def load_settings()
   begin
-    settings_savedata = File.read("#{$settings['save_load_directory']}/#{SAVED_SETTINGS_FILENAME}")
+    settings_savedata = File.read("#{SAVED_SETTINGS_FILENAME}")
   rescue
     puts "Didn't find settings savedata"
     return
@@ -590,7 +595,7 @@ $thread_data = []
 
 # Default settings
 $default_save_load_dir = Dir.pwd
-$default_refresh_rate = 10
+$default_refresh_rate = 3
 
 # Hash containing default settings
 $settings = {
@@ -602,7 +607,12 @@ $settings = {
 # [MAIN]
 #########################################
 
+# Reload data
 load_settings
 load_threads
+
+# Start refresh timer
+refresh_timer = TkTimer.new($settings['refresh_rate'] * 60000, -1, proc{refresh})
+refresh_timer.start
 
 Tk.mainloop
