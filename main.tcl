@@ -464,7 +464,7 @@ proc vTclWindow.top45 {base} {
         -in $top -x 305 -y 120 -width 100 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.lab61 \
-        -in $top -x 245 -y 120 -width 55 -height 50 -anchor nw \
+        -in $top -x 245 -y 170 -width 55 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.but64 \
         -in $top -x 205 -y 235 -width 164 -height 30 -anchor nw \
@@ -484,7 +484,7 @@ proc vTclWindow.top45 {base} {
     place $top.che45 \
         -in $top -x 180 -y 35 -anchor nw -bordermode ignore 
     place $top.lab56 \
-        -in $top -x 245 -y 170 -width 55 -height 50 -anchor nw \
+        -in $top -x 245 -y 120 -width 55 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.lab62 \
         -in $top -x 285 -y 35 -width 107 -height 29 -anchor nw \

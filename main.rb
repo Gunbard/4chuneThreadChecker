@@ -28,9 +28,9 @@ $top_window.protocol(:WM_DELETE_WINDOW) {
   end
 }
 
-$settings_window.protocol(:WM_DELETE_WINDOW) { 
+$settings_window.protocol(:WM_DELETE_WINDOW) {
+  $settings_window.grab(:release) 
   $settings_window.withdraw
-  $settings_window.grab(:release)
 }
 
 #####################
@@ -102,7 +102,7 @@ $menubar.add :cascade, :menu => menu_opt_help, :label => 'Help'
 
 ## About
 menu_opt_help.add :command, :label => 'About', :command => proc{
-  show_msg('About', 'Stuff', $top_window)
+  show_msg('About', "4chune Thread Checker v0.1\nby Gunbard (gunbard@gmail.com)", $top_window)
 }
 
 #####################
@@ -155,7 +155,13 @@ $openurl_button.command = proc{
     next
   end
   
+  # Reset post counter
+  $thread_data[selected_index].new_posts = 0
+  
   url = $thread_data[selected_index].url
+  refresh_list
+  
+  # TODO: Flex based on OS
   system("start #{url}")
 }
 
@@ -256,7 +262,7 @@ $set_rate_button.command = proc{
 
 # Refresh now
 $refresh_button.command = proc{
-  refresh
+  Thread.new{refresh}
 }
 
 # Set thread update enabled
@@ -356,12 +362,12 @@ def get_thread(url)
       title = thread_data['subject']
     elsif thread_data['com']
       title = thread_data['com']
-    elsif thread_data['filename']
-      title = thread_data['filename']
+    elsif thread_data['filename'] && thread_data['ext']
+      title = "#{thread_data['filename']}#{thread_data['ext']}"
     end
     
     # Strip html
-    title.gsub!(/<[^>]*>/, ' ')
+    title.gsub!(/<[^>]*>/m, ' ')
     
     # Decode entites
     coder = HTMLEntities.new
@@ -391,13 +397,14 @@ end
 # Updates latest data for all threads in list
 # This method iterates through thread_data and requests
 # for the latest data.
-def refresh()
-  # TODO: Perform on new thread
-  # TODO: Prevent adding new stuff while this is running
-  
+def refresh()  
   if $thread_data.length == 0
     return
   end
+  
+  # Disable buttons
+  $refresh_button.state = 'disabled'
+  $add_thread_button.state = 'disabled'
   
   $thread_data.each_with_index do |thread_item, index|
     unless thread_item.enabled && !thread_item.deleted
@@ -408,11 +415,12 @@ def refresh()
     if updated_thread_item
       new_posts = updated_thread_item.replies - thread_item.replies
       if new_posts > 0
-        updated_thread_item.new_posts = new_posts
         puts "#{new_posts} new post(s) for thread: #{thread_item.url}"
       else
         puts "No new posts for thread: #{thread_item.url}"
       end
+      
+      updated_thread_item.new_posts = thread_item.new_posts + new_posts
       
       # Don't update certain properties
       updated_thread_item.enabled = thread_item.enabled
@@ -426,6 +434,10 @@ def refresh()
   
   refresh_list
   save_threads
+  
+  # Enable buttons
+  $refresh_button.state = 'normal'
+  $add_thread_button.state = 'normal'
 end
 
 # Refreshes the listbox of threads
@@ -503,7 +515,7 @@ end
 
 # Save $thread_data to file
 def save_threads()
-  thread_savefile = File.open("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}", 'w')
+  thread_savefile = File.open("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}", 'wb')
   thread_savefile << Marshal.dump($thread_data)
   thread_savefile.close
   puts 'Saved thread data to file'
@@ -527,7 +539,7 @@ end
 
 # Save $settings to file
 def save_settings()
-  settings_savefile = File.open("#{$settings['save_load_directory']}/#{SAVED_SETTINGS_FILENAME}", 'w')
+  settings_savefile = File.open("#{$settings['save_load_directory']}/#{SAVED_SETTINGS_FILENAME}", 'wb')
   settings_savefile << Marshal.dump($settings)
   settings_savefile.close
   puts 'Saved settings to file'
