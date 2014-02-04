@@ -27,7 +27,7 @@ class ThreadItem
     formatted_date.strftime('%m/%d/%y%n%l:%M:%S %p')
   end
   
-  def date_added
+  def date_added_display
     # Format as mm/dd/yy
     formatted_date = Time.at(@date_added).to_datetime
     formatted_date.strftime('%m/%d/%y%n%l:%M:%S %p')

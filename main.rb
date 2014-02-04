@@ -47,8 +47,8 @@ $menubar.add :cascade, :menu => menu_opt_file, :label => 'File'
 ## Settings
 menu_opt_file.add :command, :label => 'Settings', :command => 
 proc{
-  $save_load_label['textvariable'].value = File.split($save_load_directory)[1]
-  $rate_entry.textvariable.value = $refresh_rate
+  $save_load_label['textvariable'].value = File.split($settings['save_load_directory'])[1]
+  $rate_entry.textvariable.value = $settings['refresh_rate']
   
   $settings_window.deiconify()
   $settings_window.grab
@@ -130,6 +130,7 @@ $title_label            = wpath($top_window, '.top45.lab55.lab56')
 
 # Settings window
 $save_load_button       = wpath($settings_window, '.top48.but52')
+$set_rate_button        = wpath($settings_window, '.top48.but55')
 $save_load_label        = wpath($settings_window, '.top48.lab53.lab54')
 $rate_entry             = wpath($settings_window, '.top48.lab45.ent46')
 
@@ -229,12 +230,29 @@ $delete_thread_button.command = proc{
 
 # Open save/load folder dialog
 $save_load_button.command = proc{
-  dirname = Tk::chooseDirectory(:parent => $settings_window, :initialdir => $save_load_directory)
+  dirname = Tk::chooseDirectory(:parent => $settings_window, :initialdir => $settings['save_load_directory'])
   if dirname && dirname.length > 0
-    $save_load_directory = dirname
+    $settings['save_load_directory'] = dirname
     $save_load_label['textvariable'].value = File.split(dirname)[1]
+    save_settings
   end
 }
+
+# Set refresh rate
+$set_rate_button.command = proc{
+  rate = $rate_entry.textvariable.value.to_i
+  if rate < MIN_REFRESH_RATE || rate > MAX_REFRESH_RATE
+      rate = $default_refresh_rate
+      $rate_entry.textvariable.value = $default_refresh_rate
+      show_msg('Error', "Please enter a value between #{MIN_REFRESH_RATE} and #{MAX_REFRESH_RATE}", $settings_window)
+      return
+  end
+
+  $settings['refresh_rate'] = rate
+  save_settings
+  show_msg('OK!', "Refresh rate set to #{rate} minute(s).", $settings_window)
+}
+
 
 # Refresh now
 $refresh_button.command = proc{
@@ -376,6 +394,11 @@ end
 def refresh()
   # TODO: Perform on new thread
   # TODO: Prevent adding new stuff while this is running
+  
+  if $thread_data.length == 0
+    return
+  end
+  
   $thread_data.each_with_index do |thread_item, index|
     unless thread_item.enabled && !thread_item.deleted
       next
@@ -391,7 +414,10 @@ def refresh()
         puts "No new posts for thread: #{thread_item.url}"
       end
       
+      # Don't update certain properties
       updated_thread_item.enabled = thread_item.enabled
+      updated_thread_item.date_added = thread_item.date_added
+      
       $thread_data[index] = updated_thread_item
     else
       $thread_data[index].deleted = true
@@ -431,7 +457,7 @@ def refresh_info(index)
   $date_label['textvariable'].value         = thread_item.date
   $replies_label['textvariable'].value      = thread_item.replies
   $images_label['textvariable'].value       = thread_item.images
-  $date_add_label['textvariable'].value     = thread_item.date_added
+  $date_add_label['textvariable'].value     = thread_item.date_added_display
   $title_label['textvariable'].value        = thread_item.title
   $new_posts_label['textvariable'].value    = thread_item.new_posts
   $enabled_check['variable'].value          = thread_item.enabled
@@ -477,7 +503,7 @@ end
 
 # Save $thread_data to file
 def save_threads()
-  thread_savefile = File.open("#{$save_load_directory}/#{SAVED_THREADS_FILENAME}", 'w')
+  thread_savefile = File.open("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}", 'w')
   thread_savefile << Marshal.dump($thread_data)
   thread_savefile.close
   puts 'Saved thread data to file'
@@ -486,7 +512,7 @@ end
 # Load thread data from file
 def load_threads()
   begin
-    thread_savedata = File.read("#{$save_load_directory}/#{SAVED_THREADS_FILENAME}")
+    thread_savedata = File.read("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}")
   rescue
     puts "Didn't find thread list savedata"
     return
@@ -497,6 +523,29 @@ def load_threads()
   refresh_list
   
   puts 'Loaded saved thread data'
+end
+
+# Save $settings to file
+def save_settings()
+  settings_savefile = File.open("#{$settings['save_load_directory']}/#{SAVED_SETTINGS_FILENAME}", 'w')
+  settings_savefile << Marshal.dump($settings)
+  settings_savefile.close
+  puts 'Saved settings to file'
+end
+
+# Load settings from file
+def load_settings()
+  begin
+    settings_savedata = File.read("#{$settings['save_load_directory']}/#{SAVED_SETTINGS_FILENAME}")
+  rescue
+    puts "Didn't find settings savedata"
+    return
+  end
+  
+  saved_settings_data = Marshal.load(settings_savedata)
+  $settings = saved_settings_data
+  
+  puts 'Loaded saved settings data'
 end
 
 # Selects a thread in the listbox
@@ -517,6 +566,8 @@ end
 #####################
 SAVED_THREADS_FILENAME = 'threads.dat' 
 SAVED_SETTINGS_FILENAME = 'settings.dat' 
+MIN_REFRESH_RATE = 1
+MAX_REFRESH_RATE = 99999
 
 #####################
 # Global vars
@@ -525,16 +576,21 @@ SAVED_SETTINGS_FILENAME = 'settings.dat'
 # Data source containing threadItems
 $thread_data = []
 
-# Default save directory is working directory
-$save_load_directory = Dir.pwd
+# Default settings
+$default_save_load_dir = Dir.pwd
+$default_refresh_rate = 10
 
-# Default to 10 minutes
-$refresh_rate = 10
+# Hash containing default settings
+$settings = {
+  'save_load_directory' => $default_save_load_dir,
+  'refresh_rate' => $default_refresh_rate
+}
 
 #########################################
 # [MAIN]
 #########################################
 
+load_settings
 load_threads
 
 Tk.mainloop
