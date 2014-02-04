@@ -63,6 +63,8 @@ class ThreadItem
   def display_color
     if @deleted
       return '#FF0000' # Red
+    elsif !@enabled
+      return '#AAAAAA' # Gray
     end
     
     '#000000'

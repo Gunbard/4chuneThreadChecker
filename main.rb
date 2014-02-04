@@ -273,7 +273,7 @@ $refresh_button.command = proc{
 # Set thread update enabled
 $enabled_check.command = proc{
   selected_index = $thread_listbox.curselection[0]
-  if !selected_index
+  if !selected_index || selected_index < 0 || selected_index > $thread_data.length
     next
   end
   
@@ -284,6 +284,9 @@ $enabled_check.command = proc{
   end
   
   $thread_data[selected_index].enabled = enabled
+  
+  # Update listbox title display
+  $thread_listbox.itemconfigure selected_index, :foreground, $thread_data[selected_index].display_color
 }
 
 #####################
