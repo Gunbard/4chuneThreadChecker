@@ -48,7 +48,8 @@ $menubar.add :cascade, :menu => menu_opt_file, :label => 'File'
 menu_opt_file.add :command, :label => 'Settings', :command => 
 proc{
   $save_load_label['textvariable'].value = File.split($save_load_directory)[1]
-
+  $rate_entry.textvariable.value = $refresh_rate
+  
   $settings_window.deiconify()
   $settings_window.grab
 }
@@ -130,6 +131,7 @@ $title_label            = wpath($top_window, '.top45.lab55.lab56')
 # Settings window
 $save_load_button       = wpath($settings_window, '.top48.but52')
 $save_load_label        = wpath($settings_window, '.top48.lab53.lab54')
+$rate_entry             = wpath($settings_window, '.top48.lab45.ent46')
 
 #####################
 # [Widget events]
@@ -140,11 +142,9 @@ $thread_listbox.bind('<ListboxSelect>', proc{ |event|
   if event.widget.curselection.length == 0 
     next # Note to self: Use 'next' when you want to return from a proc
   end
-  
-  $openurl_button.state = 'normal'
-  
+
   index = event.widget.curselection[0]
-  refresh_info(index)
+  select_thread(index)
 })
 
 # Open thread in browser
@@ -214,16 +214,22 @@ $delete_thread_button.command = proc{
   delete_thread(selected_thread)
   
   if $thread_data.length > 0
-    new_index = selected_index - 1
-    $thread_listbox.selection_set new_index 
+    new_index = 0
+    if selected_index > 0
+      new_index = selected_index - 1
+    end
+    
+    select_thread(new_index)
   else
     clear_info
   end
+  
+  refresh_list
 }
 
 # Open save/load folder dialog
 $save_load_button.command = proc{
-  dirname = Tk::chooseDirectory(:parent => $settings_window)
+  dirname = Tk::chooseDirectory(:parent => $settings_window, :initialdir => $save_load_directory)
   if dirname && dirname.length > 0
     $save_load_directory = dirname
     $save_load_label['textvariable'].value = File.split(dirname)[1]
@@ -274,6 +280,7 @@ $new_posts_label['textvariable']    = TkVariable.new
 
 # Entry boxes
 $add_thread_entry.textvariable = TkVariable.new
+$rate_entry.textvariable = TkVariable.new
 
 # Check boxes
 $enabled_check.variable = TkVariable.new
@@ -360,7 +367,6 @@ end
 # Deletes a thread item in the thread data array
 def delete_thread(thread_item)
   $thread_data.delete(thread_item)
-  refresh_list
   save_threads
 end
 
@@ -398,6 +404,8 @@ end
 
 # Refreshes the listbox of threads
 def refresh_list()
+  saved_selected_index = $thread_listbox.curselection[0]
+  
   $thread_listbox.delete 0, $thread_listbox.size
   
   $thread_data.each_with_index do |item, index|
@@ -405,8 +413,13 @@ def refresh_list()
     $thread_listbox.itemconfigure index, :foreground, item.display_color
   end
   
-  clear_info
   $add_thread_button.state = 'normal'
+  
+  if saved_selected_index && $thread_data.length > 0
+    select_thread(saved_selected_index)
+  else
+    clear_info
+  end
 end
 
 # Refreshes the display info for the selected thread
@@ -486,6 +499,17 @@ def load_threads()
   puts 'Loaded saved thread data'
 end
 
+# Selects a thread in the listbox
+def select_thread(index)
+  if index < 0 || index > $thread_data.length
+    puts "Attempted to select out of bounds index: #{index}"
+    return
+  end
+
+  $openurl_button.state = 'normal'
+  $thread_listbox.selection_set index
+  refresh_info(index)
+end
 #####################################################
 
 #####################
@@ -503,6 +527,9 @@ $thread_data = []
 
 # Default save directory is working directory
 $save_load_directory = Dir.pwd
+
+# Default to 10 minutes
+$refresh_rate = 10
 
 #########################################
 # [MAIN]
