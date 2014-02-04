@@ -51,14 +51,8 @@ proc{
   $save_load_label['textvariable'].value = File.split($settings['save_load_directory'])[1]
   $rate_entry.textvariable.value = $settings['refresh_rate']
   
-  # Center the settings window
-  window_width = $settings_window.winfo_width
-  window_height = $settings_window.winfo_height
-  screen_width = root.winfo_screenwidth
-  screen_height = root.winfo_screenheight
-  center_x = (screen_width / 2) - (window_width / 2)
-  center_y = (screen_height / 2) - (window_height / 2)
-  $settings_window.geometry("+#{center_x}+#{center_y}")
+  # Move to top window's origin
+  $settings_window.geometry("+#{$top_window.winfo_x}+#{$top_window.winfo_y}")
   
   $settings_window.deiconify()
   $settings_window.grab
