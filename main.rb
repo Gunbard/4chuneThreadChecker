@@ -170,6 +170,7 @@ $openurl_button.command = proc{
   
   url = $thread_data[selected_index].url
   refresh_list
+  save_threads
   
   # TODO: Flex based on OS
   system("start #{url}")
@@ -429,12 +430,12 @@ def refresh()
     if updated_thread_item
       new_posts = updated_thread_item.replies - thread_item.replies
       if new_posts > 0
+        updated_thread_item.new_posts = thread_item.new_posts + new_posts
         puts "#{new_posts} new post(s) for thread: #{thread_item.url}"
       else
+        updated_thread_item.new_posts = thread_item.new_posts
         puts "No new posts for thread: #{thread_item.url}"
       end
-      
-      updated_thread_item.new_posts = thread_item.new_posts + new_posts
       
       # Don't update certain properties
       updated_thread_item.enabled = thread_item.enabled
