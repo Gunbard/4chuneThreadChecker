@@ -530,23 +530,31 @@ end
 
 # Save $thread_data to file
 def save_threads()
-  thread_savefile = File.open("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}", 'wb')
-  thread_savefile << Marshal.dump($thread_data)
-  thread_savefile.close
+  File.open("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}", 'wb') do |file|
+    Marshal.dump($thread_data, file)
+  end
+  
   puts 'Saved thread data to file'
 end
 
 # Load thread data from file
 def load_threads()
-  begin
-    thread_savedata = File.read("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}")
-  rescue
+  saved_thread_data = nil
+  if File.exists?("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}")
+    File.open("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}") do |file|
+      saved_thread_data = Marshal.load(file)
+    end  
+  else
     puts "Didn't find thread list savedata"
+  end
+  
+  if saved_thread_data
+    $thread_data = saved_thread_data
+  else
+    puts 'Unable to load thread save file'
     return
   end
   
-  saved_thread_data = Marshal.load(thread_savedata)
-  $thread_data = saved_thread_data
   refresh_list
   
   puts 'Loaded saved thread data'
@@ -554,23 +562,30 @@ end
 
 # Save $settings to file
 def save_settings()
-  settings_savefile = File.open("#{SAVED_SETTINGS_FILENAME}", 'wb')
-  settings_savefile << Marshal.dump($settings)
-  settings_savefile.close
+  File.open("#{SAVED_SETTINGS_FILENAME}", 'wb') do |file|
+    Marshal.dump($settings, file)
+  end
+  
   puts 'Saved settings to file'
 end
 
 # Load settings from file
 def load_settings()
-  begin
-    settings_savedata = File.read("#{SAVED_SETTINGS_FILENAME}")
-  rescue
+  saved_settings_data = nil
+  if File.exists?("#{SAVED_SETTINGS_FILENAME}")
+    File.open("#{SAVED_SETTINGS_FILENAME}") do |file|
+      saved_settings_data = Marshal.load(file)
+    end  
+  else
     puts "Didn't find settings savedata"
-    return
   end
   
-  saved_settings_data = Marshal.load(settings_savedata)
-  $settings = saved_settings_data
+  if saved_settings_data
+    $settings = saved_settings_data
+  else
+    puts 'Unable to load settings save file'
+    return
+  end
   
   puts 'Loaded saved settings data'
 end
