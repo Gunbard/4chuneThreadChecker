@@ -98,7 +98,7 @@ menu_opt_tools.add :command, :label => 'Wipe out list', :command => proc{
     :parent  => $top_window
   })
   
-  if response == 'no'
+  if response == 'no' || $refresh_button.state == 'disabled'
     next
   end
   
@@ -523,6 +523,10 @@ end
 
 # Goes through $thread_data and deletes deleted threads
 def clean_list()
+  if $refresh_button.state == 'disabled'
+    return
+  end
+  
   $thread_data.delete_if {|thread_item| thread_item.deleted}
   refresh_list
   save_threads
