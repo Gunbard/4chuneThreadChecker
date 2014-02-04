@@ -15,9 +15,12 @@ require_relative 'threadItem'
 #####################
 temp_dir = File.dirname($0)
 Tk.tk_call('source', "#{temp_dir}/main.tcl")
-root = TkRoot.new
-$top_window = root.winfo_children[0]
-$settings_window = root.winfo_children[1]
+$root = TkRoot.new
+$top_window = $root.winfo_children[0]
+$settings_window = $root.winfo_children[1]
+
+# Center application window
+center_window($top_window, nil)
 
 # Event handler for window close
 $top_window.protocol(:WM_DELETE_WINDOW) { 
@@ -52,7 +55,8 @@ proc{
   $rate_entry.textvariable.value = $settings['refresh_rate']
   
   # Move to top window's origin
-  $settings_window.geometry("+#{$top_window.winfo_x}+#{$top_window.winfo_y}")
+  #$settings_window.geometry("+#{$top_window.winfo_x}+#{$top_window.winfo_y}")
+  center_window($settings_window, $top_window)
   
   $settings_window.deiconify()
   $settings_window.grab

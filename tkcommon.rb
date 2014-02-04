@@ -49,3 +49,31 @@ def show_msg(title, msg, window)
       })
   end
 end
+
+
+# Centers a window
+# @param The window to center
+# @param The window to center in, or the screen if nil
+def center_window(window, parent)
+  window_width = window.winfo_width
+  window_height = window.winfo_height
+  
+  screen_width = $root.winfo_screenwidth
+  screen_height = $root.winfo_screenheight
+  
+  screen_Xorigin = 0
+  screen_Yorigin = 0
+  
+  if parent
+    screen_width = parent.winfo_width
+    screen_height = parent.winfo_height
+    
+    screen_Xorigin = parent.winfo_x
+    screen_Yorigin = parent.winfo_y
+  end
+  
+  center_x = (screen_width / 2) - (window_width / 2)
+  center_y = (screen_height / 2) - (window_height / 2)
+  
+  window.geometry("+#{screen_Xorigin + center_x}+#{screen_Yorigin + center_y}")
+end
