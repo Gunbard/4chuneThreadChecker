@@ -196,13 +196,15 @@ $add_thread_button.command = proc{
   end
   
   $add_thread_button.state = 'disabled'
-  
+    
   new_thread_item = get_thread(url)
   if new_thread_item
     add_thread(new_thread_item)
     $add_thread_entry.textvariable.value = ''
+    $add_thread_button.state = 'normal'
   else
     show_msg('Error', "Thread seems to have 404'd already.", $top_window)
+    $add_thread_entry.textvariable.value = ''
     $add_thread_button.state = 'normal'
   end
 }
@@ -466,8 +468,6 @@ def refresh_list()
     $thread_listbox.insert index, item.display_title
     $thread_listbox.itemconfigure index, :foreground, item.display_color
   end
-  
-  $add_thread_button.state = 'normal'
   
   if saved_selected_index && $thread_data.length > 0
     select_thread(saved_selected_index)

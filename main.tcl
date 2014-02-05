@@ -290,7 +290,7 @@ proc vTclWindow. {base} {
     # CREATING WIDGETS
     ###################
     wm focusmodel $top passive
-    wm geometry $top 200x200+216+216; update
+    wm geometry $top 200x200+144+144; update
     wm maxsize $top 5762 1061
     wm minsize $top 112 1
     wm overrideredirect $top 0
@@ -346,14 +346,14 @@ proc vTclWindow.top45 {base} {
         -pady 0 -text Delete 
     vTcl:DefineAlias "$top.but50" "Button2" vTcl:WidgetProc "Toplevel1" 1
     labelframe $top.lab55 \
-        -text Title -height 60 -width 220 
+        -text Title -height 70 -width 220 
     vTcl:DefineAlias "$top.lab55" "Labelframe1" vTcl:WidgetProc "Toplevel1" 1
     set site_3_0 $top.lab55
     label $site_3_0.lab56 \
         -justify left -text { } -width 207 -wraplength 207 
     vTcl:DefineAlias "$site_3_0.lab56" "Label1" vTcl:WidgetProc "Toplevel1" 1
     place $site_3_0.lab56 \
-        -in $site_3_0 -x 5 -y 15 -width 207 -height 39 -anchor nw \
+        -in $site_3_0 -x 5 -y 15 -width 207 -height 49 -anchor nw \
         -bordermode ignore 
     labelframe $top.lab58 \
         -text Board -height 50 -width 55 
@@ -452,25 +452,25 @@ proc vTclWindow.top45 {base} {
         -in $top -x 35 -y 235 -width 87 -height 30 -anchor nw \
         -bordermode ignore 
     place $top.lab55 \
-        -in $top -x 185 -y 60 -width 220 -height 60 -anchor nw \
+        -in $top -x 185 -y 55 -width 220 -height 70 -anchor nw \
         -bordermode ignore 
     place $top.lab58 \
-        -in $top -x 185 -y 120 -width 55 -height 50 -anchor nw \
+        -in $top -x 185 -y 125 -width 55 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.lab59 \
-        -in $top -x 185 -y 170 -width 55 -height 50 -anchor nw \
+        -in $top -x 185 -y 175 -width 55 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.lab60 \
-        -in $top -x 305 -y 120 -width 100 -height 50 -anchor nw \
+        -in $top -x 305 -y 125 -width 100 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.lab61 \
-        -in $top -x 245 -y 170 -width 55 -height 50 -anchor nw \
+        -in $top -x 245 -y 175 -width 55 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.but64 \
         -in $top -x 205 -y 235 -width 164 -height 30 -anchor nw \
         -bordermode ignore 
     place $top.lab65 \
-        -in $top -x 305 -y 170 -width 100 -height 50 -anchor nw \
+        -in $top -x 305 -y 175 -width 100 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.scr69 \
         -in $top -x 161 -y 43 -width 17 -height 176 -anchor nw \
@@ -482,12 +482,13 @@ proc vTclWindow.top45 {base} {
         -in $top -x 35 -y 5 -width 88 -height 29 -anchor nw \
         -bordermode ignore 
     place $top.che45 \
-        -in $top -x 180 -y 35 -anchor nw -bordermode ignore 
+        -in $top -x 180 -y 35 -width 71 -height 24 -anchor nw \
+        -bordermode ignore 
     place $top.lab56 \
-        -in $top -x 245 -y 120 -width 55 -height 50 -anchor nw \
+        -in $top -x 245 -y 125 -width 55 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.lab62 \
-        -in $top -x 285 -y 35 -width 107 -height 29 -anchor nw \
+        -in $top -x 285 -y 35 -width 107 -height 24 -anchor nw \
         -bordermode ignore 
 
     vTcl:FireEvent $base <<Ready>>
@@ -595,6 +596,64 @@ bind "_TopLevel" <Destroy> {
 
 
 if {![info exists vTcl(sourcing)]} {
+bind "_vTclBalloon" <<KillBalloon>> {
+    namespace eval ::vTcl::balloon {
+        after cancel $id
+        if {[winfo exists .vTcl.balloon]} {
+            destroy .vTcl.balloon
+        }
+        set set 0
+    }
+}
+bind "_vTclBalloon" <<vTclBalloon>> {
+    if {$::vTcl::balloon::first != 1} {break}
+
+    namespace eval ::vTcl::balloon {
+        set first 2
+        if {![winfo exists .vTcl]} {
+            toplevel .vTcl; wm withdraw .vTcl
+        }
+        if {![winfo exists .vTcl.balloon]} {
+            toplevel .vTcl.balloon -bg black
+        }
+        wm overrideredirect .vTcl.balloon 1
+        label .vTcl.balloon.l  -text ${%W} -relief flat  -bg #ffffaa -fg black -padx 2 -pady 0 -anchor w
+        pack .vTcl.balloon.l -side left -padx 1 -pady 1
+        wm geometry  .vTcl.balloon  +[expr {[winfo rootx %W]+[winfo width %W]/2}]+[expr {[winfo rooty %W]+[winfo height %W]+4}]
+        set set 1
+    }
+}
+bind "_vTclBalloon" <Button> {
+    namespace eval ::vTcl::balloon {
+        set first 0
+    }
+    vTcl:FireEvent %W <<KillBalloon>>
+}
+bind "_vTclBalloon" <Enter> {
+    namespace eval ::vTcl::balloon {
+        ## self defining balloon?
+        if {![info exists %W]} {
+            vTcl:FireEvent %W <<SetBalloon>>
+        }
+        set set 0
+        set first 1
+        set id [after 500 {vTcl:FireEvent %W <<vTclBalloon>>}]
+    }
+}
+bind "_vTclBalloon" <Leave> {
+    namespace eval ::vTcl::balloon {
+        set first 0
+    }
+    vTcl:FireEvent %W <<KillBalloon>>
+}
+bind "_vTclBalloon" <Motion> {
+    namespace eval ::vTcl::balloon {
+        if {!$set} {
+            after cancel $id
+            set id [after 500 {vTcl:FireEvent %W <<vTclBalloon>>}]
+        }
+    }
+}
 }
 
 Window show .
