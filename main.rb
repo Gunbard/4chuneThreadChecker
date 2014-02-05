@@ -37,6 +37,12 @@ $settings_window.protocol(:WM_DELETE_WINDOW) {
   $settings_window.withdraw
 }
 
+# Add tray minimize support in Windows
+if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+  require_relative 'win32TrayMinimize'
+  add_tray_minimize($top_window, '4chune Thread Checker')
+end
+
 #####################
 # [Menu]
 #####################
