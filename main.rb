@@ -398,8 +398,8 @@ def get_thread(url)
 
     title = 'No title'
     
-    if thread_data['subject']
-      title = thread_data['subject']
+    if thread_data['sub']
+      title = thread_data['sub']
     elsif thread_data['com']
       title = thread_data['com']
     elsif thread_data['filename'] && thread_data['ext']
