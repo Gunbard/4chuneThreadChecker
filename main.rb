@@ -302,6 +302,7 @@ $enabled_check.command = proc{
 # Listbox configuration
 $thread_listbox[:activestyle] = 'none'
 $thread_listbox[:yscrollcommand] = proc{|*args| $thread_scrollbar.set(*args)}
+$thread_listbox[:exportselection] = 'false'
 $thread_scrollbar[:command] = proc{|*args| $thread_listbox.yview(*args)}
 
 # Labels (must use textvariable)
