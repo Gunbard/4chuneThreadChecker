@@ -20,7 +20,7 @@ $top_window = $root.winfo_children[0]
 $settings_window = $root.winfo_children[1]
 
 # Center application window
-center_window($top_window, nil)
+center_window($top_window, nil, $root)
 
 # Event handler for window close
 $top_window.protocol(:WM_DELETE_WINDOW) { 
@@ -67,7 +67,7 @@ proc{
   end
   
   # Move to top window's origin
-  center_window($settings_window, $top_window)
+  center_window($settings_window, $top_window, $root)
   
   $settings_window.deiconify()
   $settings_window.grab
@@ -454,7 +454,7 @@ def refresh()
   total_new_posts = 0
   
   $thread_data.each_with_index do |thread_item, index|
-    unless thread_item.enabled && !thread_item.deleted
+    unless thread_item.enabled
       next
     end
     
@@ -491,7 +491,7 @@ def refresh()
   $add_thread_button.state = 'normal'
   
   if $settings['popups_enabled'] && total_new_posts > 0
-    show_msg("#{total_new_posts} new posts!", report_msg, nil)
+    show_dialog("#{total_new_posts} new posts!", report_msg, nil, $root)
   end
 end
 
