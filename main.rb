@@ -462,6 +462,7 @@ end
 def refresh_list()
   saved_selected_index = $thread_listbox.curselection[0]
   
+  # Clear list
   $thread_listbox.delete 0, $thread_listbox.size
   
   $thread_data.each_with_index do |item, index|
@@ -469,7 +470,7 @@ def refresh_list()
     $thread_listbox.itemconfigure index, :foreground, item.display_color
   end
   
-  if saved_selected_index && $thread_data.length > 0
+  if saved_selected_index && saved_selected_index != '' && $thread_data.length > 0
     select_thread(saved_selected_index)
   else
     clear_info
