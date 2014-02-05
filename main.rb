@@ -60,8 +60,13 @@ proc{
   $save_load_label['textvariable'].value = File.split($settings['save_load_directory'])[1]
   $rate_entry.textvariable.value = $settings['refresh_rate']
   
+  $popups_enabled_check.variable.value = 0
+  
+  if $settings['popups_enabled']
+    $popups_enabled_check.variable.value = 1
+  end
+  
   # Move to top window's origin
-  #$settings_window.geometry("+#{$top_window.winfo_x}+#{$top_window.winfo_y}")
   center_window($settings_window, $top_window)
   
   $settings_window.deiconify()
@@ -147,6 +152,7 @@ $save_load_button       = wpath($settings_window, '.top48.but52')
 $set_rate_button        = wpath($settings_window, '.top48.but55')
 $save_load_label        = wpath($settings_window, '.top48.lab53.lab54')
 $rate_entry             = wpath($settings_window, '.top48.lab45.ent46')
+$popups_enabled_check   = wpath($settings_window, '.top48.che48')
 
 #####################
 # [Widget events]
@@ -301,6 +307,19 @@ $enabled_check.command = proc{
   $thread_listbox.itemconfigure selected_index, :foreground, $thread_data[selected_index].display_color
 }
 
+# Set popups enabled
+$popups_enabled_check.command = proc{
+  enabled = true
+  
+  if $popups_enabled_check['variable'] == 0
+    enabled = false
+  end
+  
+  $settings['popups_enabled'] = enabled
+  
+  save_settings
+}
+
 #####################
 # [Widget config]
 #####################
@@ -324,12 +343,12 @@ $save_load_label['textvariable']    = TkVariable.new
 $new_posts_label['textvariable']    = TkVariable.new
 
 # Entry boxes
-$add_thread_entry.textvariable = TkVariable.new
-$rate_entry.textvariable = TkVariable.new
+$add_thread_entry.textvariable      = TkVariable.new
+$rate_entry.textvariable            = TkVariable.new
 
 # Check boxes
-$enabled_check.variable = TkVariable.new
-
+$enabled_check.variable             = TkVariable.new
+$popups_enabled_check.variable      = TkVariable.new
 #####################
 # [Helper methods]
 #####################
@@ -431,6 +450,9 @@ def refresh()
   # Reload saved data in the event it changed
   load_threads
   
+  report_msg = ''
+  total_new_posts = 0
+  
   $thread_data.each_with_index do |thread_item, index|
     unless thread_item.enabled && !thread_item.deleted
       next
@@ -441,6 +463,10 @@ def refresh()
       new_posts = updated_thread_item.replies - thread_item.replies
       if new_posts > 0
         updated_thread_item.new_posts = thread_item.new_posts + new_posts
+        
+        report_msg << "#{new_posts} new post(s) for thread: #{thread_item.title}\n"
+        total_new_posts += new_posts
+        
         puts "#{new_posts} new post(s) for thread: #{thread_item.url}"
       else
         updated_thread_item.new_posts = thread_item.new_posts
@@ -463,6 +489,10 @@ def refresh()
   # Enable buttons
   $refresh_button.state = 'normal'
   $add_thread_button.state = 'normal'
+  
+  if $settings['popups_enabled'] && total_new_posts > 0
+    show_msg("#{total_new_posts} new posts!", report_msg, nil)
+  end
 end
 
 # Refreshes the listbox of threads
@@ -634,11 +664,13 @@ $thread_data = []
 # Default settings
 $default_save_load_dir = Dir.pwd
 $default_refresh_rate = 3
+$default_popups_enabled = false;
 
 # Hash containing default settings
 $settings = {
   'save_load_directory' => $default_save_load_dir,
-  'refresh_rate' => $default_refresh_rate
+  'refresh_rate' => $default_refresh_rate,
+  'popups_enabled' => $default_popups_enabled
 }
 
 #########################################
