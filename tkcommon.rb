@@ -56,6 +56,7 @@ end
 # @param msg The message to show
 # @param window The window to center in or nil to ceter on screen
 # @param root Tk root, used for screen centering
+# @returns The dialog window
 def show_dialog(title, msg, window, root)
   window_width = 360
   window_height = 180
@@ -88,6 +89,8 @@ def show_dialog(title, msg, window, root)
   dialog.update
   dialog.focus
   center_window(dialog, window, root)
+  
+  dialog
 end
 
 # Centers a window

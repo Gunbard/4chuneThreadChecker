@@ -502,7 +502,12 @@ def refresh()
   $add_thread_button.state = 'normal'
   
   if $settings['popups_enabled'] && total_new_posts > 0
-    show_dialog("#{total_new_posts} new posts! - #{APPLICATION_TITLE}", report_msg, nil, $root)
+    begin
+      $popup_notification.destroy
+    rescue
+    end
+  
+    $popup_notification = show_dialog("#{total_new_posts} new posts! - #{APPLICATION_TITLE}", report_msg, nil, $root)
   end
 end
 
