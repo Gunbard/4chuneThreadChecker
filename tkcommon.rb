@@ -1,5 +1,6 @@
 =begin
-    Common, reusable methods for Ruby Tk / vTcl development
+  Common, reusable methods for Ruby Tk / vTcl development
+  Author: Gunbard
 =end
 
 # Finds and returns a widget

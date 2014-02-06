@@ -1,5 +1,6 @@
 =begin
   Model object for a thread
+  Author: Gunbard
 =end
 
 class ThreadItem

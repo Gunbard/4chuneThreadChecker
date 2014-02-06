@@ -1,5 +1,6 @@
 =begin
   Minimize to tray support in Windows
+  Author: Gunbard
 =end
 
 require 'win32/api'
