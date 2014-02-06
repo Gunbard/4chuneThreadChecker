@@ -540,6 +540,10 @@ proc vTclWindow.top48 {base} {
     button $top.but52 \
         -pady 0 -text Set 
     vTcl:DefineAlias "$top.but52" "Button4" vTcl:WidgetProc "Toplevel2" 1
+    bindtags $top.but52 "$top.but52 Button $top all _vTclBalloon"
+    bind $top.but52 <<SetBalloon>> {
+        set ::vTcl::balloon::%W {Folder to save thread data to}
+    }
     labelframe $top.lab53 \
         -text {Save/load location} -height 55 -width 190 
     vTcl:DefineAlias "$top.lab53" "Labelframe2" vTcl:WidgetProc "Toplevel2" 1
@@ -596,64 +600,6 @@ bind "_TopLevel" <Destroy> {
 
 
 if {![info exists vTcl(sourcing)]} {
-bind "_vTclBalloon" <<KillBalloon>> {
-    namespace eval ::vTcl::balloon {
-        after cancel $id
-        if {[winfo exists .vTcl.balloon]} {
-            destroy .vTcl.balloon
-        }
-        set set 0
-    }
-}
-bind "_vTclBalloon" <<vTclBalloon>> {
-    if {$::vTcl::balloon::first != 1} {break}
-
-    namespace eval ::vTcl::balloon {
-        set first 2
-        if {![winfo exists .vTcl]} {
-            toplevel .vTcl; wm withdraw .vTcl
-        }
-        if {![winfo exists .vTcl.balloon]} {
-            toplevel .vTcl.balloon -bg black
-        }
-        wm overrideredirect .vTcl.balloon 1
-        label .vTcl.balloon.l  -text ${%W} -relief flat  -bg #ffffaa -fg black -padx 2 -pady 0 -anchor w
-        pack .vTcl.balloon.l -side left -padx 1 -pady 1
-        wm geometry  .vTcl.balloon  +[expr {[winfo rootx %W]+[winfo width %W]/2}]+[expr {[winfo rooty %W]+[winfo height %W]+4}]
-        set set 1
-    }
-}
-bind "_vTclBalloon" <Button> {
-    namespace eval ::vTcl::balloon {
-        set first 0
-    }
-    vTcl:FireEvent %W <<KillBalloon>>
-}
-bind "_vTclBalloon" <Enter> {
-    namespace eval ::vTcl::balloon {
-        ## self defining balloon?
-        if {![info exists %W]} {
-            vTcl:FireEvent %W <<SetBalloon>>
-        }
-        set set 0
-        set first 1
-        set id [after 500 {vTcl:FireEvent %W <<vTclBalloon>>}]
-    }
-}
-bind "_vTclBalloon" <Leave> {
-    namespace eval ::vTcl::balloon {
-        set first 0
-    }
-    vTcl:FireEvent %W <<KillBalloon>>
-}
-bind "_vTclBalloon" <Motion> {
-    namespace eval ::vTcl::balloon {
-        if {!$set} {
-            after cancel $id
-            set id [after 500 {vTcl:FireEvent %W <<vTclBalloon>>}]
-        }
-    }
-}
 }
 
 Window show .

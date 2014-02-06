@@ -11,6 +11,17 @@ require_relative 'tkcommon'
 require_relative 'threadItem'
 
 #####################
+# Constants
+#####################
+SAVED_THREADS_FILENAME = 'threads.dat' 
+SAVED_SETTINGS_FILENAME = 'settings.dat'
+APPLICATION_TITLE = '4chune Thread Checker'
+APPLICATION_AUTHOR = 'Gunbard (gunbard@gmail.com)'
+APPLICATION_VERSION = 'v0.1'
+MIN_REFRESH_RATE = 1
+MAX_REFRESH_RATE = 99999
+
+#####################
 # [Tk/Tcl stuff]
 #####################
 temp_dir = File.dirname($0)
@@ -40,7 +51,7 @@ $settings_window.protocol(:WM_DELETE_WINDOW) {
 # Add tray minimize support in Windows
 if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
   require_relative 'win32TrayMinimize'
-  add_tray_minimize($top_window, '4chune Thread Checker')
+  add_tray_minimize($top_window, APPLICATION_TITLE)
 end
 
 #####################
@@ -121,7 +132,7 @@ $menubar.add :cascade, :menu => menu_opt_help, :label => 'Help'
 
 ## About
 menu_opt_help.add :command, :label => 'About', :command => proc{
-  show_msg('About', "4chune Thread Checker v0.1\nby Gunbard (gunbard@gmail.com)", $top_window)
+  show_msg('About', "#{APPLICATION_TITLE} #{APPLICATION_VERSION}\nby #{APPLICATION_AUTHOR}", $top_window)
 }
 
 #####################
@@ -491,7 +502,7 @@ def refresh()
   $add_thread_button.state = 'normal'
   
   if $settings['popups_enabled'] && total_new_posts > 0
-    show_dialog("#{total_new_posts} new posts!", report_msg, nil, $root)
+    show_dialog("#{total_new_posts} new posts! - #{APPLICATION_TITLE}", report_msg, nil, $root)
   end
 end
 
@@ -645,14 +656,6 @@ def select_thread(index)
   refresh_info(index)
 end
 #####################################################
-
-#####################
-# Constants
-#####################
-SAVED_THREADS_FILENAME = 'threads.dat' 
-SAVED_SETTINGS_FILENAME = 'settings.dat' 
-MIN_REFRESH_RATE = 1
-MAX_REFRESH_RATE = 99999
 
 #####################
 # Global vars
