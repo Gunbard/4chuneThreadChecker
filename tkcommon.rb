@@ -56,7 +56,9 @@ end
 # @param msg The message to show
 # @param window The window to center in or nil to ceter on screen
 # @param root Tk root, used for screen centering
-def show_dialog(title, msg, window, root)
+# @param command Command block for the OK button
+# @returns The dialog window
+def show_dialog(title, msg, window, root, command)
   window_width = 360
   window_height = 180
 
@@ -73,13 +75,15 @@ def show_dialog(title, msg, window, root)
     :text => msg
   })
   
+  unless command
+    dialog.destroy
+  end
+  
   ok_button = TkButton.new(dialog, {
     :text => 'OK',
     :width => 10,
     :height => 2,
-    :command => proc{
-      dialog.destroy
-    }
+    :command => command
   })
   
   msg_label.pack(:padx => 20, :pady => 20, :side => 'top')
@@ -88,6 +92,8 @@ def show_dialog(title, msg, window, root)
   dialog.update
   dialog.focus
   center_window(dialog, window, root)
+  
+  dialog
 end
 
 # Centers a window
