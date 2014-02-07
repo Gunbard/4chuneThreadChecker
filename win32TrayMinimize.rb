@@ -36,6 +36,10 @@ $hicoY              = $ExtractIcon.call(0, 'C:\WINDOWS\SYSTEM32\INETCPL.CPL', 21
 $old_window_proc    = 0
 $pnid               = 0
 
+# Set this to prevent an icon from being added on window close
+# Since Win API seems to send the same message again
+$tray_listen        = true 
+
 # Allows a window to minimize to the system tray
 # @param window The window that can be minimized to the tray
 # @param tiptxt The tooltip text for the icon
@@ -53,7 +57,8 @@ def add_tray_minimize(window, tiptxt)
     end
 
     # I HAVE NO IDEA IF THIS IS THE ACTUAL MINIMIZE MESSAGE but it seems to work okay
-    if umsg == 24 && wparam == 0
+    # These messages seem to be different from what is documented in the Windows API
+    if umsg == 24 && wparam == 0 && $tray_listen
       window.withdraw
       $Shell_NotifyIcon.call(NIM_ADD, $pnid)
     end
