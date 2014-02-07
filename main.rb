@@ -39,6 +39,9 @@ $top_window.protocol(:WM_DELETE_WINDOW) {
   if defined?(Ocra)
     exit # Don't want to kill when building
   else
+    if is_windows
+      clean_tray_icon
+    end
     exit!
   end
 }
@@ -49,7 +52,7 @@ $settings_window.protocol(:WM_DELETE_WINDOW) {
 }
 
 # Add tray minimize support in Windows
-if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+if is_windows
   require_relative 'win32TrayMinimize'
   add_tray_minimize($top_window, APPLICATION_TITLE)
 end
@@ -463,13 +466,18 @@ end
 # This method iterates through thread_data and requests
 # for the latest data.
 def refresh()  
+  $refresh_button.state = 'disabled'
+  
   # Don't refresh if no threads or currently refreshing
-  if $thread_data.length == 0 || $refresh_button.state == 'disabled'
+  if $thread_data.length == 0 || $add_thread_button.state == 'disabled' || !network_is_connected
+    unless network_is_connected
+      puts "Network connection unavailable. Not refreshing."
+    end
+    
+    $refresh_button.state = 'normal'
     return
   end
   
-  # Disable buttons
-  $refresh_button.state = 'disabled'
   $add_thread_button.state = 'disabled'
   
   # Reload saved data in the event it changed
@@ -704,6 +712,16 @@ def generate_report(thread_data)
   end
   
   report
+end
+
+# Determines if there's a network connection avaialable
+# NOTE: Assumes Google is always up. ALWAYS.
+def network_is_connected
+  begin
+    true if open("http://www.4chan.org")
+  rescue
+    false
+  end
 end
 #####################################################
 

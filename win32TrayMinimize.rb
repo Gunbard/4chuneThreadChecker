@@ -34,11 +34,18 @@ $Shell_NotifyIcon   = Win32::API.new('Shell_NotifyIconA', 'LP', 'I', 'shell32')
 $ExtractIcon        = Win32::API.new('ExtractIcon', 'LPI', 'L', 'shell32')
 $hicoY              = $ExtractIcon.call(0, 'C:\WINDOWS\SYSTEM32\INETCPL.CPL', 21)  # Green tick
 $old_window_proc    = 0
+$pnid               = 0
+
+# Set this to prevent an icon from being added on window close
+# Since Win API seems to send the same message again
+$tray_listen        = true 
 
 # Allows a window to minimize to the system tray
 # @param window The window that can be minimized to the tray
 # @param tiptxt The tooltip text for the icon
 def add_tray_minimize(window, tiptxt)
+  $pnid = [6*4+64, window.winfo_id.to_i(16), 'ruby'.hash, NIF_MESSAGE | NIF_ICON | NIF_TIP, WM_TRAYICON, $hicoY].pack('LLIIIL') << tiptxt << "\0"*(64 - tiptxt.size)
+    
   #-------WNDPROC OVERRIDE---------#
   # Custom windowProc override
   $my_window_proc = Win32::API::Callback.new('LIIL', 'I') { |hwnd, umsg, wparam, lparam|
@@ -46,11 +53,14 @@ def add_tray_minimize(window, tiptxt)
     if umsg == WM_TRAYICON && lparam == WM_LBUTTONUP
       # Restore window
       window.deiconify
+      $Shell_NotifyIcon.call(NIM_DELETE, $pnid)
     end
 
     # I HAVE NO IDEA IF THIS IS THE ACTUAL MINIMIZE MESSAGE but it seems to work okay
-    if umsg == 24 && wparam == 0
+    # These messages seem to be different from what is documented in the Windows API
+    if umsg == 24 && wparam == 0 && $tray_listen
       window.withdraw
+      $Shell_NotifyIcon.call(NIM_ADD, $pnid)
     end
 
     # Pass messages to original windowProc
@@ -61,8 +71,10 @@ def add_tray_minimize(window, tiptxt)
   $old_window_proc = $SetWindowLong.call(window.winfo_id.to_i(16), GWL_WNDPROC, $my_window_proc)
   #------END WNDPROC OVERRIDE------#
 
-  pnid = [6*4+64, window.winfo_id.to_i(16), 'ruby'.hash, NIF_MESSAGE | NIF_ICON | NIF_TIP, WM_TRAYICON, $hicoY].pack('LLIIIL') << tiptxt << "\0"*(64 - tiptxt.size)
+end
 
-  ret = $Shell_NotifyIcon.call(NIM_ADD, pnid)
-  p 'Err: NIM_ADD' if ret == 0
+# Deletes the icon from the taskbar and tells to stop listening for minimize event
+def clean_tray_icon()
+  $Shell_NotifyIcon.call(NIM_DELETE, $pnid)
+  $tray_listen = false
 end
