@@ -39,6 +39,9 @@ $top_window.protocol(:WM_DELETE_WINDOW) {
   if defined?(Ocra)
     exit # Don't want to kill when building
   else
+    if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+      remove_tray_icon
+    end
     exit!
   end
 }
