@@ -528,11 +528,16 @@ def refresh()
     end
   
     report_msg = generate_report($new_thread_data)
-  
-    $popup_notification = show_dialog("#{$new_thread_data['total']} new posts! - #{APPLICATION_TITLE}", report_msg, nil, $root, proc{
+    close_popup_action = proc{
       $popup_notification.destroy
       $new_thread_data = {}
-    })
+    }
+    
+    $popup_notification = show_dialog("#{$new_thread_data['total']} new posts! - #{APPLICATION_TITLE}", report_msg, nil, $root, close_popup_action)
+    
+    $popup_notification.protocol(:WM_DELETE_WINDOW) {
+      close_popup_action.call
+    }
   end
 end
 
