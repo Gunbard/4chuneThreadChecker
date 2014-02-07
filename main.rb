@@ -360,6 +360,20 @@ $rate_entry.textvariable            = TkVariable.new
 # Check boxes
 $enabled_check.variable             = TkVariable.new
 $popups_enabled_check.variable      = TkVariable.new
+
+# Right-click menu for entry boxes
+add_thread_menu = TkMenu.new($add_thread_entry)
+add_thread_menu.add :command, :label => 'Paste', :command => proc{
+  clipboard_data = TkClipboard.get
+  $add_thread_entry.insert('insert', clipboard_data)
+}
+
+if Tk.windowingsystem == 'aqua'
+    $add_thread_entry.bind '2', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
+    $add_thread_entry.bind 'Control-1', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
+else
+    $add_thread_entry.bind '3', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
+end
 #####################
 # [Helper methods]
 #####################
@@ -461,9 +475,6 @@ def refresh()
   # Reload saved data in the event it changed
   load_threads
   
-  report_msg = ''
-  total_new_posts = 0
-  
   $thread_data.each_with_index do |thread_item, index|
     unless thread_item.enabled
       next
@@ -475,8 +486,17 @@ def refresh()
       if new_posts > 0
         updated_thread_item.new_posts = thread_item.new_posts + new_posts
         
-        report_msg << "#{new_posts} new post(s) for thread: #{thread_item.title}\n"
-        total_new_posts += new_posts
+        if $new_thread_data[index] && $new_thread_data[index] > 0
+          $new_thread_data[index] += new_posts
+        else
+          $new_thread_data[index] = new_posts
+        end
+
+        if $new_thread_data['total'] && $new_thread_data['total'] > 0
+          $new_thread_data['total'] += new_posts
+        else
+          $new_thread_data['total'] = new_posts
+        end
         
         puts "#{new_posts} new post(s) for thread: #{thread_item.url}"
       else
@@ -501,13 +521,18 @@ def refresh()
   $refresh_button.state = 'normal'
   $add_thread_button.state = 'normal'
   
-  if $settings['popups_enabled'] && total_new_posts > 0
+  if $settings['popups_enabled'] && $new_thread_data['total'] && $new_thread_data['total'] > 0
     begin
       $popup_notification.destroy
     rescue
     end
   
-    $popup_notification = show_dialog("#{total_new_posts} new posts! - #{APPLICATION_TITLE}", report_msg, nil, $root)
+    report_msg = generate_report($new_thread_data)
+  
+    $popup_notification = show_dialog("#{$new_thread_data['total']} new posts! - #{APPLICATION_TITLE}", report_msg, nil, $root, proc{
+      $popup_notification.destroy
+      $new_thread_data = {}
+    })
   end
 end
 
@@ -660,6 +685,21 @@ def select_thread(index)
   $thread_listbox.selection_set index
   refresh_info(index)
 end
+
+def generate_report(thread_data)
+  report = ''
+  
+  $thread_data.each_with_index do |thread_item, index|
+    if thread_item.new_posts > 0
+      new_posts = thread_data[index]
+      if new_posts
+        report << "#{new_posts} new post(s) for thread: #{thread_item.board} #{thread_item.title}\n"
+      end
+    end
+  end
+  
+  report
+end
 #####################################################
 
 #####################
@@ -668,6 +708,9 @@ end
 
 # Data source containing threadItems
 $thread_data = []
+
+# Used to keep track of new posts in the popup {thread_index => new_posts}
+$new_thread_data = {}
 
 # Default settings
 $default_save_load_dir = Dir.pwd
