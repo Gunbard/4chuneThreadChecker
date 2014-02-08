@@ -10,6 +10,9 @@ require 'htmlentities'
 require_relative 'tkcommon'
 require_relative 'threadItem'
 
+temp_dir = File.dirname($0)
+Tk.tk_call('source', "#{temp_dir}/main.tcl")
+
 #####################
 # Constants
 #####################
@@ -17,17 +20,15 @@ SAVED_THREADS_FILENAME = 'threads.dat'
 SAVED_SETTINGS_FILENAME = 'settings.dat'
 APPLICATION_TITLE = '4chune Thread Checker'
 APPLICATION_AUTHOR = 'Gunbard (gunbard@gmail.com)'
-APPLICATION_VERSION = 'v0.1'
+APPLICATION_VERSION = 'v0.2'
 MIN_REFRESH_RATE = 1
 MAX_REFRESH_RATE = 99999
-ICON_PATH = 'icon.ico' # Needs .ico
-WINDOW_ICON_PATH = 'icon.gif' # Needs .gif
+ICON_PATH = "#{temp_dir}/icon.ico" # Needs .ico
+WINDOW_ICON_PATH = "#{temp_dir}/icon.gif" # Needs .gif
 
 #####################
 # [Tk/Tcl stuff]
 #####################
-temp_dir = File.dirname($0)
-Tk.tk_call('source', "#{temp_dir}/main.tcl")
 $root = TkRoot.new
 $top_window = $root.winfo_children[0]
 $settings_window = $root.winfo_children[1]
@@ -548,7 +549,7 @@ def refresh()
       $new_thread_data = {}
     }
     
-    $popup_notification = show_dialog("#{$new_thread_data['total']} new posts! - #{APPLICATION_TITLE}", report_msg, nil, $root, close_popup_action)
+    $popup_notification = show_dialog("#{$new_thread_data['total']} new post(s)! - #{APPLICATION_TITLE}", report_msg, nil, $root, close_popup_action)
     
     $popup_notification.iconphoto($window_icon)
 

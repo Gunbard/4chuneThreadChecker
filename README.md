@@ -6,6 +6,7 @@ External thread watcher for 4chan. Uses 4chan's API.
 
 Version history
 -------
+- 0.2: Fix the whole 999999 popups thing, center windows, improve tray behavior
 - 0.1: External thread updater
 
 Features
@@ -29,6 +30,10 @@ N/a
 ####OS X
 
 You will need to install ActiveState Tk/Tcl and upgrade to Ruby 1.9
+
+```
+http://www.activestate.com/activetcl/downloads/thank-you?dl=http://downloads.activestate.com/ActiveTcl/releases/8.5.15.0/ActiveTcl8.5.15.1.297588-macosx10.5-i386-x86_64-threaded.dmg
+```
 
 
 ####Linux
