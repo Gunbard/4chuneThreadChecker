@@ -20,6 +20,8 @@ APPLICATION_AUTHOR = 'Gunbard (gunbard@gmail.com)'
 APPLICATION_VERSION = 'v0.1'
 MIN_REFRESH_RATE = 1
 MAX_REFRESH_RATE = 99999
+ICON_PATH = 'icon.ico' # Needs .ico
+WINDOW_ICON_PATH = 'icon.gif' # Needs .gif
 
 #####################
 # [Tk/Tcl stuff]
@@ -29,6 +31,11 @@ Tk.tk_call('source', "#{temp_dir}/main.tcl")
 $root = TkRoot.new
 $top_window = $root.winfo_children[0]
 $settings_window = $root.winfo_children[1]
+
+# Set icon
+$window_icon = TkPhotoImage.new('file' => WINDOW_ICON_PATH)
+$top_window.iconphoto($window_icon)
+$settings_window.iconphoto($window_icon)
 
 # Center application window
 center_window($top_window, nil, $root)
@@ -54,7 +61,7 @@ $settings_window.protocol(:WM_DELETE_WINDOW) {
 # Add tray minimize support in Windows
 if is_windows
   require_relative 'win32TrayMinimize'
-  add_tray_minimize($top_window, APPLICATION_TITLE)
+  add_tray_minimize($top_window, APPLICATION_TITLE, ICON_PATH)
 end
 
 #####################
@@ -543,6 +550,8 @@ def refresh()
     
     $popup_notification = show_dialog("#{$new_thread_data['total']} new posts! - #{APPLICATION_TITLE}", report_msg, nil, $root, close_popup_action)
     
+    $popup_notification.iconphoto($window_icon)
+
     $popup_notification.protocol(:WM_DELETE_WINDOW) {
       close_popup_action.call
     }

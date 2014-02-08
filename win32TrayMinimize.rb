@@ -32,7 +32,6 @@ $SetWindowLong      = Win32::API.new('SetWindowLong', 'LIK', 'L', 'user32')
 $CallWindowProc     = Win32::API.new('CallWindowProc', 'LIIIL', 'L', 'user32')
 $Shell_NotifyIcon   = Win32::API.new('Shell_NotifyIconA', 'LP', 'I', 'shell32')
 $ExtractIcon        = Win32::API.new('ExtractIcon', 'LPI', 'L', 'shell32')
-$hicoY              = $ExtractIcon.call(0, 'C:\WINDOWS\SYSTEM32\INETCPL.CPL', 21)  # Green tick
 $old_window_proc    = 0
 $pnid               = 0
 
@@ -43,8 +42,10 @@ $tray_listen        = true
 # Allows a window to minimize to the system tray
 # @param window The window that can be minimized to the tray
 # @param tiptxt The tooltip text for the icon
-def add_tray_minimize(window, tiptxt)
-  $pnid = [6*4+64, window.winfo_id.to_i(16), 'ruby'.hash, NIF_MESSAGE | NIF_ICON | NIF_TIP, WM_TRAYICON, $hicoY].pack('LLIIIL') << tiptxt << "\0"*(64 - tiptxt.size)
+# @param icon_path Path for the icon file
+def add_tray_minimize(window, tiptxt, icon_path)
+  icon = $ExtractIcon.call(0, icon_path, 0)
+  $pnid = [6*4+64, window.winfo_id.to_i(16), 'ruby'.hash, NIF_MESSAGE | NIF_ICON | NIF_TIP, WM_TRAYICON, icon].pack('LLIIIL') << tiptxt << "\0"*(64 - tiptxt.size)
     
   #-------WNDPROC OVERRIDE---------#
   # Custom windowProc override
