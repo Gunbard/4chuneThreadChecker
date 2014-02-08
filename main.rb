@@ -466,13 +466,18 @@ end
 # This method iterates through thread_data and requests
 # for the latest data.
 def refresh()  
+  $refresh_button.state = 'disabled'
+  
   # Don't refresh if no threads or currently refreshing
-  if $thread_data.length == 0 || $refresh_button.state == 'disabled'
+  if $thread_data.length == 0 || $add_thread_button.state == 'disabled' || !network_is_connected
+    unless network_is_connected
+      puts "Network connection unavailable. Not refreshing."
+    end
+    
+    $refresh_button.state = 'normal'
     return
   end
   
-  # Disable buttons
-  $refresh_button.state = 'disabled'
   $add_thread_button.state = 'disabled'
   
   # Reload saved data in the event it changed
@@ -707,6 +712,16 @@ def generate_report(thread_data)
   end
   
   report
+end
+
+# Determines if there's a network connection avaialable
+# NOTE: Assumes Google is always up. ALWAYS.
+def network_is_connected
+  begin
+    true if open("http://www.4chan.org")
+  rescue
+    false
+  end
 end
 #####################################################
 

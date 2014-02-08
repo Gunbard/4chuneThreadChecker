@@ -125,6 +125,6 @@ def center_window(window, parent, root)
 end
 
 # Checks if current platform is Windows
-def is_windows()
+def is_windows
   return (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
 end
