@@ -53,7 +53,7 @@ def add_tray_minimize(window, tiptxt)
     if umsg == WM_TRAYICON && lparam == WM_LBUTTONUP
       # Restore window
       window.deiconify
-      remove_tray_icon
+      $Shell_NotifyIcon.call(NIM_DELETE, $pnid)
     end
 
     # I HAVE NO IDEA IF THIS IS THE ACTUAL MINIMIZE MESSAGE but it seems to work okay
@@ -73,7 +73,8 @@ def add_tray_minimize(window, tiptxt)
 
 end
 
-# Deletes the icon from the taskbar
-def remove_tray_icon()
+# Deletes the icon from the taskbar and tells to stop listening for minimize event
+def clean_tray_icon()
   $Shell_NotifyIcon.call(NIM_DELETE, $pnid)
+  $tray_listen = false
 end

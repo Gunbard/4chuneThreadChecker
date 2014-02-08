@@ -123,3 +123,8 @@ def center_window(window, parent, root)
   
   window.geometry("+#{screen_Xorigin + center_x}+#{screen_Yorigin + center_y}")
 end
+
+# Checks if current platform is Windows
+def is_windows()
+  return (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+end

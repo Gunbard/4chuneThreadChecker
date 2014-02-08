@@ -39,9 +39,8 @@ $top_window.protocol(:WM_DELETE_WINDOW) {
   if defined?(Ocra)
     exit # Don't want to kill when building
   else
-    if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
-      $tray_listen = false
-      remove_tray_icon
+    if is_windows
+      clean_tray_icon
     end
     exit!
   end
@@ -53,7 +52,7 @@ $settings_window.protocol(:WM_DELETE_WINDOW) {
 }
 
 # Add tray minimize support in Windows
-if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+if is_windows
   require_relative 'win32TrayMinimize'
   add_tray_minimize($top_window, APPLICATION_TITLE)
 end
