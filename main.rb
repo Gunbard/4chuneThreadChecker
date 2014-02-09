@@ -32,11 +32,13 @@ WINDOW_ICON_PATH = "#{temp_dir}/icon.gif" # Needs .gif
 $root = TkRoot.new
 $top_window = $root.winfo_children[0]
 $settings_window = $root.winfo_children[1]
+$proxy_settings_window = $root.winfo_children[2]
 
-# Set icon
+# Set icons
 $window_icon = TkPhotoImage.new('file' => WINDOW_ICON_PATH)
 $top_window.iconphoto($window_icon)
 $settings_window.iconphoto($window_icon)
+$proxy_settings_window.iconphoto($window_icon)
 
 # Center application window
 center_window($top_window, nil, $root)
@@ -57,6 +59,11 @@ $top_window.protocol(:WM_DELETE_WINDOW) {
 $settings_window.protocol(:WM_DELETE_WINDOW) {
   $settings_window.grab(:release) 
   $settings_window.withdraw
+}
+
+$proxy_settings_window.protocol(:WM_DELETE_WINDOW) {
+  $proxy_settings_window.grab(:release) 
+  $proxy_settings_window.withdraw
 }
 
 # Add tray minimize support in Windows
@@ -93,6 +100,20 @@ proc{
   
   $settings_window.deiconify()
   $settings_window.grab
+}
+
+## Proxy Settings
+menu_opt_file.add :command, :label => 'Proxy', :command => 
+proc{
+  $proxy_url_entry.textvariable.value = $settings['proxy_url']
+  $proxy_uname_entry.textvariable.value = $proxyauth_uname
+  $proxy_pword_entry.textvariable.value = $proxyauth_pword
+
+  # Move to top window's origin
+  center_window($proxy_settings_window, $top_window, $root)
+  
+  $proxy_settings_window.deiconify()
+  $proxy_settings_window.grab
 }
 
 ## Quit
@@ -176,9 +197,78 @@ $save_load_label        = wpath($settings_window, '.top48.lab53.lab54')
 $rate_entry             = wpath($settings_window, '.top48.lab45.ent46')
 $popups_enabled_check   = wpath($settings_window, '.top48.che48')
 
+# Proxy settings window
+$proxy_url_entry        = wpath($proxy_settings_window, '.top46.ent50')
+$proxy_uname_entry      = wpath($proxy_settings_window, '.top46.lab47.ent53')
+$proxy_pword_entry      = wpath($proxy_settings_window, '.top46.lab47.ent54')
+$proxy_ok_button        = wpath($proxy_settings_window, '.top46.but49')
+$proxy_clear_button     = wpath($proxy_settings_window, '.top46.but55')
+
+#####################
+# [Widget config]
+#####################
+
+# Listbox configuration
+$thread_listbox[:activestyle] = 'none'
+$thread_listbox[:yscrollcommand] = proc{|*args| $thread_scrollbar.set(*args)}
+$thread_listbox[:exportselection] = 'false'
+$thread_scrollbar[:command] = proc{|*args| $thread_listbox.yview(*args)}
+
+# Labels (must use textvariable)
+$url_label['textvariable']          = TkVariable.new
+$status_label['textvariable']       = TkVariable.new
+$board_label['textvariable']        = TkVariable.new
+$date_label['textvariable']         = TkVariable.new
+$replies_label['textvariable']      = TkVariable.new
+$images_label['textvariable']       = TkVariable.new
+$date_add_label['textvariable']     = TkVariable.new
+$title_label['textvariable']        = TkVariable.new
+$save_load_label['textvariable']    = TkVariable.new
+$new_posts_label['textvariable']    = TkVariable.new
+
+# Entry boxes
+$add_thread_entry.textvariable      = TkVariable.new
+$rate_entry.textvariable            = TkVariable.new
+$proxy_url_entry.textvariable       = TkVariable.new
+$proxy_uname_entry.textvariable     = TkVariable.new
+$proxy_pword_entry.textvariable     = TkVariable.new
+
+# Check boxes
+$enabled_check.variable             = TkVariable.new
+$popups_enabled_check.variable      = TkVariable.new
+
+# Right-click menu for entry boxes
+add_thread_menu = TkMenu.new($add_thread_entry)
+add_thread_menu.add :command, :label => 'Paste', :command => proc{
+  clipboard_data = TkClipboard.get
+  if clipboard_data
+    $add_thread_entry.insert('insert', clipboard_data)
+  end
+}
+
+proxy_url_menu = TkMenu.new($proxy_url_entry)
+proxy_url_menu.add :command, :label => 'Paste', :command => proc{
+  clipboard_data = TkClipboard.get
+  if clipboard_data
+    $proxy_url_entry.insert('insert', clipboard_data)
+  end
+}
+
+# Hide password
+$proxy_pword_entry.show = '*'
+
+if Tk.windowingsystem == 'aqua'
+    $add_thread_entry.bind '2', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
+    $add_thread_entry.bind 'Control-1', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
+else
+    $add_thread_entry.bind '3', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
+end
+
 #####################
 # [Widget events]
 #####################
+
+### Main window
 
 # Listbox selection event
 $thread_listbox.bind('<ListboxSelect>', proc{ |event|
@@ -279,6 +369,13 @@ $delete_thread_button.command = proc{
   refresh_list
 }
 
+# Refresh now
+$refresh_button.command = proc{
+  Thread.new{refresh}
+}
+
+### Settings
+
 # Open save/load folder dialog
 $save_load_button.command = proc{
   dirname = Tk::chooseDirectory(:parent => $settings_window, :initialdir => $settings['save_load_directory'])
@@ -302,12 +399,6 @@ $set_rate_button.command = proc{
   $settings['refresh_rate'] = rate
   save_settings
   show_msg('OK!', "Refresh rate set to #{rate} minute(s).", $settings_window)
-}
-
-
-# Refresh now
-$refresh_button.command = proc{
-  Thread.new{refresh}
 }
 
 # Set thread update enabled
@@ -342,49 +433,27 @@ $popups_enabled_check.command = proc{
   save_settings
 }
 
-#####################
-# [Widget config]
-#####################
+### Proxy settings
 
-# Listbox configuration
-$thread_listbox[:activestyle] = 'none'
-$thread_listbox[:yscrollcommand] = proc{|*args| $thread_scrollbar.set(*args)}
-$thread_listbox[:exportselection] = 'false'
-$thread_scrollbar[:command] = proc{|*args| $thread_listbox.yview(*args)}
+# Save settings and dismiss window
+$proxy_ok_button.command = proc{
+  $settings['proxy_url'] = $proxy_url_entry.textvariable.value
+  $proxyauth_uname = $proxy_uname_entry.textvariable.value
+  $proxyauth_pword = $proxy_pword_entry.textvariable.value
 
-# Labels (must use textvariable)
-$url_label['textvariable']          = TkVariable.new
-$status_label['textvariable']       = TkVariable.new
-$board_label['textvariable']        = TkVariable.new
-$date_label['textvariable']         = TkVariable.new
-$replies_label['textvariable']      = TkVariable.new
-$images_label['textvariable']       = TkVariable.new
-$date_add_label['textvariable']     = TkVariable.new
-$title_label['textvariable']        = TkVariable.new
-$save_load_label['textvariable']    = TkVariable.new
-$new_posts_label['textvariable']    = TkVariable.new
-
-# Entry boxes
-$add_thread_entry.textvariable      = TkVariable.new
-$rate_entry.textvariable            = TkVariable.new
-
-# Check boxes
-$enabled_check.variable             = TkVariable.new
-$popups_enabled_check.variable      = TkVariable.new
-
-# Right-click menu for entry boxes
-add_thread_menu = TkMenu.new($add_thread_entry)
-add_thread_menu.add :command, :label => 'Paste', :command => proc{
-  clipboard_data = TkClipboard.get
-  $add_thread_entry.insert('insert', clipboard_data)
+  save_settings
+  
+  $proxy_settings_window.grab(:release) 
+  $proxy_settings_window.withdraw
 }
 
-if Tk.windowingsystem == 'aqua'
-    $add_thread_entry.bind '2', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
-    $add_thread_entry.bind 'Control-1', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
-else
-    $add_thread_entry.bind '3', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
-end
+# Save settings and dismiss window
+$proxy_clear_button.command = proc{
+  $proxy_url_entry.textvariable.value = ''
+  $proxy_uname_entry.textvariable.value = ''
+  $proxy_pword_entry.textvariable.value = ''
+}
+
 #####################
 # [Helper methods]
 #####################
@@ -408,16 +477,29 @@ def get_thread(url)
   json_response = ''
 
   # Get API response
-  begin
-    puts "Getting data for url: #{url}"
-    open(api_url) do |data|
-      json_response = data.read
+  if $settings['proxy_url'].to_s.length == 0
+    begin
+      puts "Getting data for url: #{url}"
+      open(api_url) do |data|
+        json_response = data.read
+      end
+    rescue
+      puts "Error attempting to open url: #{api_url}"
+      return nil
     end
-  rescue
-    puts "Error attempting to open url: #{api_url}"
-    return nil
+  else
+    begin
+      puts "Getting data for url #{url} with proxy #{$settings['proxy_url']}"
+      proxy_uri = URI.parse($settings['proxy_url'])
+      open(api_url, :proxy_http_basic_authentication => [proxy_uri, $proxyauth_uname, $proxyauth_pword]) do |data|
+        json_response = data.read
+      end
+    rescue
+      puts "Error attempting to open url: #{api_url}"
+      return nil
+    end
   end
-
+    
   if json_response && json_response.length > 0
     puts "Got data for url: #{url}"
     response_data = JSON.parse(json_response)
@@ -475,18 +557,20 @@ end
 # for the latest data.
 def refresh()  
   $refresh_button.state = 'disabled'
+  $add_thread_button.state = 'disabled'
   
   # Don't refresh if no threads or currently refreshing
-  if $thread_data.length == 0 || $add_thread_button.state == 'disabled' || !network_is_connected
+  if $thread_data.length == 0 || $checking_connection || !network_is_connected
     unless network_is_connected
       puts "Network connection unavailable. Not refreshing."
     end
     
     $refresh_button.state = 'normal'
+    $add_thread_button.state = 'normal'
     return
   end
   
-  $add_thread_button.state = 'disabled'
+  
   
   # Reload saved data in the event it changed
   load_threads
@@ -709,6 +793,7 @@ def select_thread(index)
   refresh_info(index)
 end
 
+# Returns a basic report of new posts
 def generate_report(thread_data)
   report = ''
   
@@ -728,9 +813,14 @@ end
 # NOTE: Assumes Google is always up. ALWAYS.
 def network_is_connected
   begin
-    true if open("http://www.4chan.org")
+    $checking_connection = true
+    if open("http://www.4chan.org")
+      $checking_connection = false
+      return true
+    end
   rescue
-    false
+    $checking_connection = false
+    return false
   end
 end
 #####################################################
@@ -745,6 +835,13 @@ $thread_data = []
 # Used to keep track of new posts in the popup {thread_index => new_posts}
 $new_thread_data = {}
 
+# Used to prevent user from adding threads or refreshing while checking connection
+$checking_connection = false
+
+# Proxy auth info
+$proxyauth_uname = ''
+$proxyauth_pword = ''
+
 # Default settings
 $default_save_load_dir = Dir.pwd
 $default_refresh_rate = 3
@@ -754,7 +851,8 @@ $default_popups_enabled = false;
 $settings = {
   'save_load_directory' => $default_save_load_dir,
   'refresh_rate' => $default_refresh_rate,
-  'popups_enabled' => $default_popups_enabled
+  'popups_enabled' => $default_popups_enabled,
+  'proxy_url' => ''
 }
 
 #########################################
