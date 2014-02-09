@@ -32,11 +32,13 @@ WINDOW_ICON_PATH = "#{temp_dir}/icon.gif" # Needs .gif
 $root = TkRoot.new
 $top_window = $root.winfo_children[0]
 $settings_window = $root.winfo_children[1]
+$proxy_settings_window = $root.winfo_children[2]
 
-# Set icon
+# Set icons
 $window_icon = TkPhotoImage.new('file' => WINDOW_ICON_PATH)
 $top_window.iconphoto($window_icon)
 $settings_window.iconphoto($window_icon)
+$proxy_settings_window.iconphoto($window_icon)
 
 # Center application window
 center_window($top_window, nil, $root)
@@ -93,6 +95,16 @@ proc{
   
   $settings_window.deiconify()
   $settings_window.grab
+}
+
+## Proxy Settings
+menu_opt_file.add :command, :label => 'Proxy', :command => 
+proc{
+  # Move to top window's origin
+  center_window($proxy_settings_window, $top_window, $root)
+  
+  $proxy_settings_window.deiconify()
+  $proxy_settings_window.grab
 }
 
 ## Quit
@@ -475,18 +487,20 @@ end
 # for the latest data.
 def refresh()  
   $refresh_button.state = 'disabled'
+  $add_thread_button.state = 'disabled'
   
   # Don't refresh if no threads or currently refreshing
-  if $thread_data.length == 0 || $add_thread_button.state == 'disabled' || !network_is_connected
+  if $thread_data.length == 0 || $checking_connection || !network_is_connected
     unless network_is_connected
       puts "Network connection unavailable. Not refreshing."
     end
     
     $refresh_button.state = 'normal'
+    $add_thread_button.state = 'normal'
     return
   end
   
-  $add_thread_button.state = 'disabled'
+  
   
   # Reload saved data in the event it changed
   load_threads
@@ -728,9 +742,14 @@ end
 # NOTE: Assumes Google is always up. ALWAYS.
 def network_is_connected
   begin
-    true if open("http://www.4chan.org")
+    $checking_connection = true
+    if open("http://www.4chan.org")
+      $checking_connection = false
+      return true
+    end
   rescue
-    false
+    $checking_connection = false
+    return false
   end
 end
 #####################################################
@@ -744,6 +763,9 @@ $thread_data = []
 
 # Used to keep track of new posts in the popup {thread_index => new_posts}
 $new_thread_data = {}
+
+# Used to prevent user from adding threads or refreshing while checking connection
+$checking_connection = false
 
 # Default settings
 $default_save_load_dir = Dir.pwd

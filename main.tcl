@@ -248,6 +248,13 @@ proc vTcl:project:info {} {
     }
     set site_3_0 $base.lab45
     set site_3_0 $base.lab53
+    set base .top46
+    namespace eval ::widgets::$base {
+        set set,origin 0
+        set set,size 1
+        set runvisible 0
+    }
+    set site_3_0 $base.lab47
     namespace eval ::widgets_bindings {
         set tagslist {_TopLevel _vTclBalloon}
     }
@@ -290,9 +297,9 @@ proc vTclWindow. {base} {
     # CREATING WIDGETS
     ###################
     wm focusmodel $top passive
-    wm geometry $top 200x200+144+144; update
-    wm maxsize $top 5762 1061
-    wm minsize $top 112 1
+    wm geometry $top 200x200+208+208; update
+    wm maxsize $top 1916 1053
+    wm minsize $top 124 1
     wm overrideredirect $top 0
     wm resizable $top 1 1
     wm withdraw $top
@@ -579,6 +586,88 @@ proc vTclWindow.top48 {base} {
     vTcl:FireEvent $base <<Ready>>
 }
 
+proc vTclWindow.top46 {base} {
+    if {$base == ""} {
+        set base .top46
+    }
+    if {[winfo exists $base]} {
+        wm deiconify $base; return
+    }
+    set top $base
+    ###################
+    # CREATING WIDGETS
+    ###################
+    vTcl:toplevel $top -class Toplevel
+    wm withdraw $top
+    wm focusmodel $top passive
+    wm geometry $top 312x162; update
+    wm maxsize $top 1926 1063
+    wm minsize $top 134 10
+    wm overrideredirect $top 0
+    wm resizable $top 0 0
+    wm title $top "Proxy Settings"
+    vTcl:DefineAlias "$top" "Toplevel3" vTcl:Toplevel:WidgetProc "" 1
+    bindtags $top "$top Toplevel all _TopLevel"
+    vTcl:FireEvent $top <<Create>>
+    wm protocol $top WM_DELETE_WINDOW "vTcl:FireEvent $top <<DeleteWindow>>"
+
+    labelframe $top.lab47 \
+        -text Authentication -height 75 -width 280 
+    vTcl:DefineAlias "$top.lab47" "Labelframe1" vTcl:WidgetProc "Toplevel3" 1
+    set site_3_0 $top.lab47
+    label $site_3_0.lab51 \
+        -justify right -text Username: 
+    vTcl:DefineAlias "$site_3_0.lab51" "Label2" vTcl:WidgetProc "Toplevel3" 1
+    label $site_3_0.lab52 \
+        -justify right -text Password: 
+    vTcl:DefineAlias "$site_3_0.lab52" "Label3" vTcl:WidgetProc "Toplevel3" 1
+    entry $site_3_0.ent53 \
+        -background white -textvariable "$top\::ent53" 
+    vTcl:DefineAlias "$site_3_0.ent53" "Entry2" vTcl:WidgetProc "Toplevel3" 1
+    entry $site_3_0.ent54 \
+        -background white -textvariable "$top\::ent54" 
+    vTcl:DefineAlias "$site_3_0.ent54" "Entry3" vTcl:WidgetProc "Toplevel3" 1
+    place $site_3_0.lab51 \
+        -in $site_3_0 -x 37 -y 20 -anchor nw -bordermode ignore 
+    place $site_3_0.lab52 \
+        -in $site_3_0 -x 40 -y 40 -anchor nw -bordermode ignore 
+    place $site_3_0.ent53 \
+        -in $site_3_0 -x 105 -y 20 -anchor nw -bordermode ignore 
+    place $site_3_0.ent54 \
+        -in $site_3_0 -x 105 -y 45 -anchor nw -bordermode ignore 
+    label $top.lab48 \
+        -text {Proxy URL:} 
+    vTcl:DefineAlias "$top.lab48" "Label1" vTcl:WidgetProc "Toplevel3" 1
+    button $top.but49 \
+        -pady 0 -text OK 
+    vTcl:DefineAlias "$top.but49" "Button1" vTcl:WidgetProc "Toplevel3" 1
+    entry $top.ent50 \
+        -background white -textvariable "$top\::ent50" 
+    vTcl:DefineAlias "$top.ent50" "Entry1" vTcl:WidgetProc "Toplevel3" 1
+    button $top.but55 \
+        -pady 0 -text Clear 
+    vTcl:DefineAlias "$top.but55" "Button2" vTcl:WidgetProc "Toplevel3" 1
+    ###################
+    # SETTING GEOMETRY
+    ###################
+    place $top.lab47 \
+        -in $top -x 15 -y 40 -width 280 -height 75 -anchor nw \
+        -bordermode ignore 
+    place $top.lab48 \
+        -in $top -x 20 -y 15 -anchor nw -bordermode ignore 
+    place $top.but49 \
+        -in $top -x 125 -y 120 -width 69 -height 30 -anchor nw \
+        -bordermode ignore 
+    place $top.ent50 \
+        -in $top -x 90 -y 15 -width 204 -height 19 -anchor nw \
+        -bordermode ignore 
+    place $top.but55 \
+        -in $top -x 250 -y 120 -width 38 -height 29 -anchor nw \
+        -bordermode ignore 
+
+    vTcl:FireEvent $base <<Ready>>
+}
+
 #############################################################################
 ## Binding tag:  _TopLevel
 
@@ -600,10 +689,69 @@ bind "_TopLevel" <Destroy> {
 
 
 if {![info exists vTcl(sourcing)]} {
+bind "_vTclBalloon" <<KillBalloon>> {
+    namespace eval ::vTcl::balloon {
+        after cancel $id
+        if {[winfo exists .vTcl.balloon]} {
+            destroy .vTcl.balloon
+        }
+        set set 0
+    }
+}
+bind "_vTclBalloon" <<vTclBalloon>> {
+    if {$::vTcl::balloon::first != 1} {break}
+
+    namespace eval ::vTcl::balloon {
+        set first 2
+        if {![winfo exists .vTcl]} {
+            toplevel .vTcl; wm withdraw .vTcl
+        }
+        if {![winfo exists .vTcl.balloon]} {
+            toplevel .vTcl.balloon -bg black
+        }
+        wm overrideredirect .vTcl.balloon 1
+        label .vTcl.balloon.l  -text ${%W} -relief flat  -bg #ffffaa -fg black -padx 2 -pady 0 -anchor w
+        pack .vTcl.balloon.l -side left -padx 1 -pady 1
+        wm geometry  .vTcl.balloon  +[expr {[winfo rootx %W]+[winfo width %W]/2}]+[expr {[winfo rooty %W]+[winfo height %W]+4}]
+        set set 1
+    }
+}
+bind "_vTclBalloon" <Button> {
+    namespace eval ::vTcl::balloon {
+        set first 0
+    }
+    vTcl:FireEvent %W <<KillBalloon>>
+}
+bind "_vTclBalloon" <Enter> {
+    namespace eval ::vTcl::balloon {
+        ## self defining balloon?
+        if {![info exists %W]} {
+            vTcl:FireEvent %W <<SetBalloon>>
+        }
+        set set 0
+        set first 1
+        set id [after 500 {vTcl:FireEvent %W <<vTclBalloon>>}]
+    }
+}
+bind "_vTclBalloon" <Leave> {
+    namespace eval ::vTcl::balloon {
+        set first 0
+    }
+    vTcl:FireEvent %W <<KillBalloon>>
+}
+bind "_vTclBalloon" <Motion> {
+    namespace eval ::vTcl::balloon {
+        if {!$set} {
+            after cancel $id
+            set id [after 500 {vTcl:FireEvent %W <<vTclBalloon>>}]
+        }
+    }
+}
 }
 
 Window show .
 Window show .top45
 Window show .top48
+Window show .top46
 
 main $argc $argv
