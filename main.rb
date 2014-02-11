@@ -103,18 +103,18 @@ proc{
 }
 
 ## Proxy Settings
-#menu_opt_file.add :command, :label => 'Proxy', :command => 
-#proc{
-#  $proxy_url_entry.textvariable.value = $settings['proxy_url']
-#  $proxy_uname_entry.textvariable.value = $proxyauth_uname
-#  $proxy_pword_entry.textvariable.value = $proxyauth_pword
+menu_opt_file.add :command, :label => 'Proxy', :command => 
+proc{
+  $proxy_url_entry.textvariable.value = $settings['proxy_url']
+  $proxy_uname_entry.textvariable.value = $proxyauth_uname
+  $proxy_pword_entry.textvariable.value = $proxyauth_pword
 
   # Move to top window's origin
-#  center_window($proxy_settings_window, $top_window, $root)
+  center_window($proxy_settings_window, $top_window, $root)
   
-#  $proxy_settings_window.deiconify()
-#  $proxy_settings_window.grab
-#}
+  $proxy_settings_window.deiconify()
+  $proxy_settings_window.grab
+}
 
 ## Quit
 menu_opt_file.add :command, :label => 'Quit', :command => proc{exit}
