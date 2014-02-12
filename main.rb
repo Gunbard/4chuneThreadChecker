@@ -49,7 +49,7 @@ $top_window.protocol(:WM_DELETE_WINDOW) {
   if defined?(Ocra)
     exit # Don't want to kill when building
   else
-    if is_windows
+    if current_os == 'windows'
       clean_tray_icon
     end
     exit!
@@ -67,7 +67,7 @@ $proxy_settings_window.protocol(:WM_DELETE_WINDOW) {
 }
 
 # Add tray minimize support in Windows
-if is_windows
+if current_os == 'windows'
   require_relative 'win32TrayMinimize'
   add_tray_minimize($top_window, APPLICATION_TITLE, ICON_PATH)
 end
@@ -260,8 +260,11 @@ $proxy_pword_entry.show = '*'
 if Tk.windowingsystem == 'aqua'
     $add_thread_entry.bind '2', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
     $add_thread_entry.bind 'Control-1', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
+    $proxy_url_entry.bind '2', proc{|x,y| proxy_url_menu.popup(x,y)}, "%X %Y"
+    $proxy_url_entry.bind 'Control-1', proc{|x,y| proxy_url_menu.popup(x,y)}, "%X %Y"
 else
     $add_thread_entry.bind '3', proc{|x,y| add_thread_menu.popup(x,y)}, "%X %Y"
+    $proxy_url_entry.bind '3', proc{|x,y| proxy_url_menu.popup(x,y)}, "%X %Y"
 end
 
 #####################
@@ -294,8 +297,17 @@ $openurl_button.command = proc{
   refresh_list
   save_threads
   
-  # TODO: Flex based on OS
-  system("start #{url}")
+  open_command = ''
+  
+  if current_os == 'windows'
+    open_command = 'start'
+  elsif current_os == 'osx'
+    open_command = 'open'
+  elsif current_os == 'linux'
+    open_command = 'xdg-open'
+  end
+  
+  system("#{open_command} #{url}")
 }
 
 # Add a thread
