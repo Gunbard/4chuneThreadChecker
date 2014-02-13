@@ -4,7 +4,7 @@
 =end
 
 class ThreadItem
-  attr_accessor :replies, :images, :date, :board, :date_added, :title, :url, :new_posts, :enabled, :display_title, :display_color, :deleted
+  attr_accessor :replies, :images, :date, :board, :date_added, :title, :url, :new_posts, :enabled, :display_title, :display_color, :deleted, :last_post
   
   TITLE_MAX_LENGTH = 65
   
@@ -19,6 +19,7 @@ class ThreadItem
    @new_posts = 0    # The number of new posts
    @enabled = true   # Enabled for update checking
    @deleted = false  # If thread was deleted
+   @last_post = ''   # Date of last post
   end
   
   ### Getter overrides
@@ -31,6 +32,12 @@ class ThreadItem
   def date_added_display
     # Format as mm/dd/yy
     formatted_date = Time.at(@date_added).to_datetime
+    formatted_date.strftime('%m/%d/%y%n%l:%M:%S %p')
+  end
+  
+  def last_post_display
+    # Format as mm/dd/yy
+    formatted_date = Time.at(@last_post).to_datetime
     formatted_date.strftime('%m/%d/%y%n%l:%M:%S %p')
   end
   

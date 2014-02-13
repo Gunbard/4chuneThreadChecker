@@ -189,6 +189,7 @@ $replies_label          = wpath($top_window, '.top45.lab59.lab76')
 $images_label           = wpath($top_window, '.top45.lab61.lab77')
 $date_add_label         = wpath($top_window, '.top45.lab65.lab78')
 $title_label            = wpath($top_window, '.top45.lab55.lab56')
+$last_post_label        = wpath($top_window, '.top45.lab57.lab58')
 
 # Settings window
 $save_load_button       = wpath($settings_window, '.top48.but52')
@@ -225,6 +226,7 @@ $date_add_label['textvariable']     = TkVariable.new
 $title_label['textvariable']        = TkVariable.new
 $save_load_label['textvariable']    = TkVariable.new
 $new_posts_label['textvariable']    = TkVariable.new
+$last_post_label['textvariable']    = TkVariable.new
 
 # Entry boxes
 $add_thread_entry.textvariable      = TkVariable.new
@@ -516,6 +518,7 @@ def get_thread(url)
     puts "Got data for url: #{url}"
     response_data = JSON.parse(json_response)
     thread_data = response_data['posts'][0]
+    last_item = response_data['posts'][response_data.length]
 
     new_thread_item = ThreadItem.new
     new_thread_item.replies = thread_data['replies']
@@ -525,6 +528,7 @@ def get_thread(url)
     new_thread_item.date_added = Time.now.to_i
     new_thread_item.title = 'No title'
     new_thread_item.url = url
+    new_thread_item.last_post = last_item['time']
 
     title = 'No title'
     
@@ -686,6 +690,7 @@ def refresh_info(index)
   $date_add_label['textvariable'].value     = thread_item.date_added_display
   $title_label['textvariable'].value        = thread_item.title
   $new_posts_label['textvariable'].value    = thread_item.new_posts
+  $last_post_label['textvariable'].value    = thread_item.last_post_display
   $enabled_check['variable'].value          = thread_item.enabled
   
   if thread_item.new_posts > 0
