@@ -231,7 +231,7 @@ proc vTcl:project:info {} {
     namespace eval ::widgets::$base {
         set set,origin 1
         set set,size 1
-        set runvisible 1
+        set runvisible 0
     }
     set site_3_0 $base.lab55
     set site_3_0 $base.lab58
@@ -328,13 +328,13 @@ proc vTclWindow.top45 {base} {
     # CREATING WIDGETS
     ###################
     vTcl:toplevel $top -class Toplevel
+    wm withdraw $top
     wm focusmodel $top passive
     wm geometry $top 410x321+742+291; update
     wm maxsize $top 1916 1053
     wm minsize $top 134 10
     wm overrideredirect $top 0
     wm resizable $top 0 0
-    wm deiconify $top
     wm title $top "4chune Thread Checker"
     vTcl:DefineAlias "$top" "Toplevel1" vTcl:Toplevel:WidgetProc "" 1
     bindtags $top "$top Toplevel all _TopLevel"

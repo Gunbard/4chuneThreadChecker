@@ -43,6 +43,9 @@ $proxy_settings_window.iconphoto($window_icon)
 # Center application window
 center_window($top_window, nil, $root)
 
+# Show application
+$top_window.deiconify
+
 # Event handler for window close
 $top_window.protocol(:WM_DELETE_WINDOW) { 
   # TODO: Clean up if in process of refreshing
