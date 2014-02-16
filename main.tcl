@@ -298,7 +298,7 @@ proc vTclWindow. {base} {
     # CREATING WIDGETS
     ###################
     wm focusmodel $top passive
-    wm geometry $top 200x200+208+208; update
+    wm geometry $top 200x200+130+130; update
     wm maxsize $top 1916 1053
     wm minsize $top 124 1
     wm overrideredirect $top 0
@@ -453,6 +453,9 @@ proc vTclWindow.top45 {base} {
     place $site_3_0.lab58 \
         -in $site_3_0 -x 5 -y 15 -width 91 -height 31 -anchor nw \
         -bordermode ignore 
+    button $top.but45 \
+        -pady 0 -state disabled -text {Mark Read} 
+    vTcl:DefineAlias "$top.but45" "Button5" vTcl:WidgetProc "Toplevel1" 1
     ###################
     # SETTING GEOMETRY
     ###################
@@ -466,7 +469,7 @@ proc vTclWindow.top45 {base} {
         -in $top -x 320 -y 5 -width 78 -height 29 -anchor nw \
         -bordermode ignore 
     place $top.but50 \
-        -in $top -x 35 -y 235 -width 87 -height 35 -anchor nw \
+        -in $top -x 10 -y 235 -width 87 -height 35 -anchor nw \
         -bordermode ignore 
     place $top.lab55 \
         -in $top -x 185 -y 55 -width 220 -height 70 -anchor nw \
@@ -484,7 +487,7 @@ proc vTclWindow.top45 {base} {
         -in $top -x 245 -y 175 -width 55 -height 50 -anchor nw \
         -bordermode ignore 
     place $top.but64 \
-        -in $top -x 195 -y 235 -width 89 -height 35 -anchor nw \
+        -in $top -x 200 -y 235 -width 89 -height 35 -anchor nw \
         -bordermode ignore 
     place $top.lab65 \
         -in $top -x 305 -y 175 -width 100 -height 50 -anchor nw \
@@ -509,6 +512,9 @@ proc vTclWindow.top45 {base} {
         -bordermode ignore 
     place $top.lab57 \
         -in $top -x 305 -y 225 -width 100 -height 50 -anchor nw \
+        -bordermode ignore 
+    place $top.but45 \
+        -in $top -x 105 -y 235 -width 87 -height 34 -anchor nw \
         -bordermode ignore 
 
     vTcl:FireEvent $base <<Ready>>

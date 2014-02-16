@@ -178,6 +178,7 @@ menu_opt_help.add :command, :label => 'About', :command => proc{
 $thread_listbox         = wpath($top_window, '.top45.lis51')
 $thread_scrollbar       = wpath($top_window, '.top45.scr69')
 $add_thread_button      = wpath($top_window, '.top45.but49')
+$mark_read_button       = wpath($top_window, '.top45.but45')
 $add_thread_entry       = wpath($top_window, '.top45.ent47')
 $refresh_button         = wpath($top_window, '.top45.but72')
 $delete_thread_button   = wpath($top_window, '.top45.but50')
@@ -389,6 +390,22 @@ $delete_thread_button.command = proc{
 # Refresh now
 $refresh_button.command = proc{
   Thread.new{refresh}
+}
+
+# Mark thread as read
+$mark_read_button.command = proc{
+  selected_index = $thread_listbox.curselection[0]
+  if !selected_index
+    next
+  end
+  
+  if $thread_data[selected_index].new_posts == 0
+    next
+  end
+  
+  $thread_data[selected_index].new_posts = 0
+  refresh_list
+  save_threads
 }
 
 ### Settings
@@ -809,6 +826,7 @@ def select_thread(index)
   end
 
   $openurl_button.state = 'normal'
+  $mark_read_button.state = 'normal'
   $thread_listbox.selection_set index
   refresh_info(index)
 end
