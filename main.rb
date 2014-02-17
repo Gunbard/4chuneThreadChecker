@@ -593,6 +593,7 @@ end
 # for the latest data.
 def refresh()  
   $refresh_button.state = 'disabled'
+  $refresh_button.text = 'Refreshing...'
   $add_thread_button.state = 'disabled'
   
   # Don't refresh if no threads or currently refreshing
@@ -602,6 +603,7 @@ def refresh()
     end
     
     $refresh_button.state = 'normal'
+    $refresh_button.text = 'Refresh Now'
     $add_thread_button.state = 'normal'
     return
   end
@@ -655,6 +657,7 @@ def refresh()
   
   # Enable buttons
   $refresh_button.state = 'normal'
+  $refresh_button.text = 'Refresh Now'
   $add_thread_button.state = 'normal'
   
   if $settings['popups_enabled'] && $new_thread_data['total'] && $new_thread_data['total'] > 0
