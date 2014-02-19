@@ -23,9 +23,40 @@ RT_GROUP_ICON       = RT_ICON + DIFFERENCE
 NIF_MESSAGE         = 1
 NIF_ICON            = 2
 NIF_TIP             = 4
+NIF_SHOWTIP         = 128
+NIF_INFO            = 16
+NIF_GUID            = 32
 NIM_ADD             = 0
 NIM_MODIFY          = 1
 NIM_DELETE          = 2
+NIM_SETVERSION      = 4
+
+class NOTIFYICONDATA
+  attr_accessor :cbSize, :hWnd, :uID, :uFlags, :uCallbackMessage, :hIcon, :szTip, :dwState, :dwStateMask, :szInfo, :uTimeoutOrVersion, :szInfoTitle, :dwInfoFlags, :guidItem, :hBalloonIcon
+
+  def initialize
+    @cbSize = 1000
+    @hWnd = 0
+    @uID = 0
+    @uFlags = 0
+    @uCallbackMessage = 0
+    @hIcon = 0
+    @szTip = ''
+    @dwState = 0
+    @dwStateMask = 0 
+    @szInfo = ''
+    @uTimeoutOrVersion = 0
+    @szInfoTitle = ''
+    @dwInfoFlags = 0
+    @guidItem = 0
+    @hBalloonIcon = 0
+  end
+  
+  def pack
+    data = [@cbSize, @hWnd, @uID, @uFlags, @uCallbackMessage, @hIcon].pack('LLIIIL') << @szTip << "\0"*(64 - @szTip.size) << [@dwState, @dwStateMask].pack('LL') << @szInfo << "\0"*(256 - @szInfo.size) << [@uTimeoutOrVersion].pack('I') << @szInfoTitle << "\0"*(64 - @szInfoTitle.size) << [@dwInfoFlags].pack('L') << @guidItem << [@hBalloonIcon].pack('L')
+    data
+  end
+end
 
 # TRAY ICON SETUP
 $SetWindowLong      = Win32::API.new('SetWindowLong', 'LIK', 'L', 'user32')
@@ -43,10 +74,17 @@ $tray_listen        = true
 # @param window The window that can be minimized to the tray
 # @param tiptxt The tooltip text for the icon
 # @param icon_path Path for the icon file
-def add_tray_minimize(window, tiptxt, icon_path)
+def add_tray_minimize(window, tiptxt, icon_path) 
   icon = $ExtractIcon.call(0, icon_path, 0)
-  $pnid = [6*4+64, window.winfo_id.to_i(16), 'ruby'.hash, NIF_MESSAGE | NIF_ICON | NIF_TIP, WM_TRAYICON, icon].pack('LLIIIL') << tiptxt << "\0"*(64 - tiptxt.size)
-    
+  
+  $pnid = NOTIFYICONDATA.new
+  $pnid.hWnd = window.winfo_id.to_i(16)
+  $pnid.uID = 'ruby'.hash 
+  $pnid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE | NIF_SHOWTIP
+  $pnid.uCallbackMessage = WM_TRAYICON
+  $pnid.hIcon = icon
+  $pnid.szTip = tiptxt
+
   #-------WNDPROC OVERRIDE---------#
   # Custom windowProc override
   $my_window_proc = Win32::API::Callback.new('LIIL', 'I') { |hwnd, umsg, wparam, lparam|
@@ -54,14 +92,14 @@ def add_tray_minimize(window, tiptxt, icon_path)
     if umsg == WM_TRAYICON && lparam == WM_LBUTTONUP
       # Restore window
       window.deiconify
-      $Shell_NotifyIcon.call(NIM_DELETE, $pnid)
+      $Shell_NotifyIcon.call(NIM_DELETE, $pnid.pack)
     end
 
     # I HAVE NO IDEA IF THIS IS THE ACTUAL MINIMIZE MESSAGE but it seems to work okay
     # These messages seem to be different from what is documented in the Windows API
     if umsg == 24 && wparam == 0 && $tray_listen
       window.withdraw
-      $Shell_NotifyIcon.call(NIM_ADD, $pnid)
+      $Shell_NotifyIcon.call(NIM_ADD, $pnid.pack)
     end
 
     # Pass messages to original windowProc
@@ -76,6 +114,6 @@ end
 
 # Deletes the icon from the taskbar and tells to stop listening for minimize event
 def clean_tray_icon()
-  $Shell_NotifyIcon.call(NIM_DELETE, $pnid)
+  $Shell_NotifyIcon.call(NIM_DELETE, $pnid.pack)
   $tray_listen = false
 end
