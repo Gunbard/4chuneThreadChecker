@@ -35,7 +35,7 @@ class NOTIFYICONDATA
   attr_accessor :cbSize, :hWnd, :uID, :uFlags, :uCallbackMessage, :hIcon, :szTip, :dwState, :dwStateMask, :szInfo, :uTimeoutOrVersion, :szInfoTitle, :dwInfoFlags, :guidItem, :hBalloonIcon
 
   def initialize
-    @cbSize = 1000
+    @cbSize = Marshal.dump(NOTIFYICONDATA).size
     @hWnd = 0
     @uID = 0
     @uFlags = 0
