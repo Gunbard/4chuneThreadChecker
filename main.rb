@@ -208,6 +208,7 @@ $proxy_uname_entry      = wpath($proxy_settings_window, '.top46.lab47.ent53')
 $proxy_pword_entry      = wpath($proxy_settings_window, '.top46.lab47.ent54')
 $proxy_ok_button        = wpath($proxy_settings_window, '.top46.but49')
 $proxy_clear_button     = wpath($proxy_settings_window, '.top46.but55')
+$proxy_test_button      = wpath($proxy_settings_window, '.top46.but47')
 
 #####################
 # [Widget config]
@@ -486,6 +487,28 @@ $proxy_clear_button.command = proc{
   $proxy_url_entry.textvariable.value = ''
   $proxy_uname_entry.textvariable.value = ''
   $proxy_pword_entry.textvariable.value = ''
+}
+
+# Test proxy connection
+$proxy_test_button.command = proc{
+    begin
+      test_url = 'http://www.4chan.org/'
+      url = $proxy_url_entry.textvariable.value
+      user = $proxy_uname_entry.textvariable.value
+      pass = $proxy_pword_entry.textvariable.value
+      
+      puts "Getting data for url #{test_url} with proxy #{url}"
+      proxy_uri = URI.parse(url)
+      open(test_url, :proxy_http_basic_authentication => [url, user, pass]) do |data|
+        json_response = data.read
+      end
+      
+      show_msg('OK!','Successfully connected using proxy', $proxy_settings_window)
+      puts 'Proxy connection successful'
+    rescue
+      show_msg('Error!','Could not connect using proxy', $proxy_settings_window)
+      puts 'Failed to connect via proxy'
+    end
 }
 
 #####################
