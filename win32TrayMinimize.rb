@@ -14,6 +14,7 @@ WM_USER             = 0x400
 WM_TRAYICON         = WM_USER + 0x0001
 WM_LBUTTONDBLCLK    = 0x0203
 WM_LBUTTONUP        = 0x0202
+WM_RBUTTONUP        = 0x0205
 GWL_WNDPROC         = -4
 
 # TRAY ICON CONSTANTS
@@ -63,6 +64,7 @@ $SetWindowLong      = Win32::API.new('SetWindowLong', 'LIK', 'L', 'user32')
 $CallWindowProc     = Win32::API.new('CallWindowProc', 'LIIIL', 'L', 'user32')
 $Shell_NotifyIcon   = Win32::API.new('Shell_NotifyIconA', 'LP', 'I', 'shell32')
 $ExtractIcon        = Win32::API.new('ExtractIcon', 'LPI', 'L', 'shell32')
+$GetCursorPos       = Win32::API.new('GetCursorPos', 'P', 'I', 'user32')
 $old_window_proc    = 0
 $pnid               = 0
 
@@ -74,7 +76,8 @@ $tray_listen        = true
 # @param window The window that can be minimized to the tray
 # @param tiptxt The tooltip text for the icon
 # @param icon_path Path for the icon file
-def add_tray_minimize(window, tiptxt, icon_path) 
+# @param context_menu A TkMenu used as the right-click menu for the tray icon
+def add_tray_minimize(window, tiptxt, icon_path, context_menu) 
   icon = $ExtractIcon.call(0, icon_path, 0)
   
   $pnid = NOTIFYICONDATA.new
@@ -89,10 +92,17 @@ def add_tray_minimize(window, tiptxt, icon_path)
   # Custom windowProc override
   $my_window_proc = Win32::API::Callback.new('LIIL', 'I') { |hwnd, umsg, wparam, lparam|
 
-    if umsg == WM_TRAYICON && lparam == WM_LBUTTONUP
-      # Restore window
-      window.deiconify
-      $Shell_NotifyIcon.call(NIM_DELETE, $pnid.pack)
+    if umsg == WM_TRAYICON
+      if lparam == WM_LBUTTONUP
+        # Restore window
+        window.deiconify
+        $Shell_NotifyIcon.call(NIM_DELETE, $pnid.pack)
+      elsif lparam == WM_RBUTTONUP
+        cursorPoint = [0, 0].pack('LL')
+        $GetCursorPos.call(cursorPoint)
+        x, y = cursorPoint.unpack('LL')
+        context_menu.popup(x, y)
+      end
     end
 
     # I HAVE NO IDEA IF THIS IS THE ACTUAL MINIMIZE MESSAGE but it seems to work okay
