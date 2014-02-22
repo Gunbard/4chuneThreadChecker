@@ -351,7 +351,7 @@ proc vTclWindow.top45 {base} {
         -pady 0 -text {Add Thread} 
     vTcl:DefineAlias "$top.but49" "Button1" vTcl:WidgetProc "Toplevel1" 1
     button $top.but50 \
-        -pady 0 -text Delete 
+        -pady 0 -state disabled -text Delete 
     vTcl:DefineAlias "$top.but50" "Button2" vTcl:WidgetProc "Toplevel1" 1
     labelframe $top.lab55 \
         -text Title -height 70 -width 220 

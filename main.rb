@@ -354,7 +354,7 @@ $add_thread_button.command = proc{
 # Delete a thread
 $delete_thread_button.command = proc{
   selected_index = $thread_listbox.curselection[0]
-  if !selected_index
+  if !selected_index || $refresh_button.state = 'disabled'
     next
   end
   
@@ -595,6 +595,7 @@ def refresh()
   $refresh_button.state = 'disabled'
   $refresh_button.text = 'Refreshing...'
   $add_thread_button.state = 'disabled'
+  $delete_thread_button.state = 'disabled'
   
   # Don't refresh if no threads or currently refreshing
   if $thread_data.length == 0 || $checking_connection || !network_is_connected
@@ -605,10 +606,9 @@ def refresh()
     $refresh_button.state = 'normal'
     $refresh_button.text = 'Refresh Now'
     $add_thread_button.state = 'normal'
+    $delete_thread_button.state = 'normal'
     return
   end
-  
-  
   
   # Reload saved data in the event it changed
   load_threads
@@ -659,6 +659,7 @@ def refresh()
   $refresh_button.state = 'normal'
   $refresh_button.text = 'Refresh Now'
   $add_thread_button.state = 'normal'
+  $delete_thread_button.state = 'normal'
   
   if $settings['popups_enabled'] && $new_thread_data['total'] && $new_thread_data['total'] > 0
     begin
@@ -830,6 +831,7 @@ def select_thread(index)
 
   $openurl_button.state = 'normal'
   $mark_read_button.state = 'normal'
+  $delete_thread_button.state = 'normal'
   $thread_listbox.selection_set index
   refresh_info(index)
 end
