@@ -561,7 +561,7 @@ def get_thread(url)
     puts "Got data for url: #{url}"
     response_data = JSON.parse(json_response)
     thread_data = response_data['posts'][0]
-    last_item = response_data['posts'][response_data.length]
+    last_item = response_data['posts'].last
 
     new_thread_item = ThreadItem.new
     new_thread_item.replies = thread_data['replies']
