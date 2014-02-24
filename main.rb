@@ -46,8 +46,8 @@ center_window($top_window, nil, $root)
 # Show application
 $top_window.deiconify
 
-# Clean exit
-def quit_application
+# Event handler for window close
+$top_window.protocol(:WM_DELETE_WINDOW) { 
   # TODO: Clean up if in process of refreshing
   if defined?(Ocra)
     exit # Don't want to kill when building
@@ -57,11 +57,6 @@ def quit_application
     end
     exit!
   end
-end
-
-# Event handler for window close
-$top_window.protocol(:WM_DELETE_WINDOW) { 
-  quit_application
 }
 
 $settings_window.protocol(:WM_DELETE_WINDOW) {
@@ -74,23 +69,16 @@ $proxy_settings_window.protocol(:WM_DELETE_WINDOW) {
   $proxy_settings_window.withdraw
 }
 
-TkOption.add '*tearOff', 0 # Prevents empty menus
-
-# Right-click context menu for icon
-tray_icon_menu = TkMenu.new()
-tray_icon_menu.add :command, :label => 'Exit', :command => proc{
-  quit_application
-}
-
 # Add tray minimize support in Windows
 if current_os == 'windows'
   require_relative 'win32TrayMinimize'
-  add_tray_minimize($top_window, APPLICATION_TITLE, ICON_PATH, tray_icon_menu)
+  add_tray_minimize($top_window, APPLICATION_TITLE, ICON_PATH)
 end
 
 #####################
 # [Menu]
 #####################
+TkOption.add '*tearOff', 0 # Prevents empty menus
 $menubar = TkMenu.new($top_window)
 $top_window[:menu] = $menubar
 
