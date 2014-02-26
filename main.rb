@@ -87,7 +87,7 @@ menu_opt_file = TkMenu.new($menubar)
 $menubar.add :cascade, :menu => menu_opt_file, :label => 'File'
 
 ## Settings
-menu_opt_file.add :command, :label => 'Settings', :command => 
+menu_opt_file.add :command, :label => 'Settings...', :command => 
 proc{
   $save_load_label['textvariable'].value = File.split($settings['save_load_directory'])[1]
   $rate_entry.textvariable.value = $settings['refresh_rate']
@@ -106,7 +106,7 @@ proc{
 }
 
 ## Proxy Settings
-menu_opt_file.add :command, :label => 'Proxy', :command => 
+menu_opt_file.add :command, :label => 'Proxy...', :command => 
 proc{
   $proxy_url_entry.textvariable.value = $settings['proxy_url']
   $proxy_uname_entry.textvariable.value = $proxyauth_uname
@@ -491,6 +491,10 @@ $proxy_clear_button.command = proc{
 
 # Test proxy connection
 $proxy_test_button.command = proc{
+    if $proxy_url_entry.textvariable.value.length == 0
+      next
+    end
+
     begin
       test_url = 'http://www.4chan.org/'
       url = $proxy_url_entry.textvariable.value
