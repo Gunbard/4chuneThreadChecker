@@ -39,9 +39,22 @@ http://www.activestate.com/activetcl/downloads/thank-you?dl=http://downloads.act
 ####Linux
 Need to install Ruby 1.9 and Tk/Tcl, but shouldn't need any other dependencies.
 
-Ex:
+Debian ex:
+
+Uninstall Ruby 1.8
 ```
-sudo apt-get install ruby libtcltk-ruby
+sudo apt-get uninstall ruby1.8 ruby # This will uninstall your current Ruby version!!
+```
+
+Install/upgrade Ruby 1.9
+```
+sudo apt-get install ruby1.9.1 ruby1.9.1-dev # This is actually Ruby 1.9.2
+sudo ln -s /usr/bin/ruby1.9.1 /usr/bin/ruby
+```
+
+Install Tk/Tcl bindings
+```
+sudo apt-get install libtcltk-ruby
 ```
 
 Installation
