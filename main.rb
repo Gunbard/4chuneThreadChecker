@@ -20,7 +20,7 @@ SAVED_THREADS_FILENAME = 'threads.dat'
 SAVED_SETTINGS_FILENAME = 'settings.dat'
 APPLICATION_TITLE = '4chune Thread Checker'
 APPLICATION_AUTHOR = 'Gunbard (gunbard@gmail.com)'
-APPLICATION_VERSION = 'v0.2'
+APPLICATION_VERSION = 'v0.3'
 MIN_REFRESH_RATE = 1
 MAX_REFRESH_RATE = 99999
 ICON_PATH = "#{temp_dir}/icon.ico" # Needs .ico
@@ -355,7 +355,7 @@ $add_thread_button.command = proc{
 # Delete a thread
 $delete_thread_button.command = proc{
   selected_index = $thread_listbox.curselection[0]
-  if !selected_index || $refresh_button.state = 'disabled'
+  if !selected_index || $refresh_button.state == 'disabled'
     next
   end
   
