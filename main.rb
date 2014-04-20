@@ -24,6 +24,7 @@ APPLICATION_VERSION = 'v0.3'
 MIN_REFRESH_RATE = 1
 MAX_REFRESH_RATE = 99999
 ICON_PATH = "#{temp_dir}/icon.ico" # Needs .ico
+ICON_RED_PATH = "#{temp_dir}/iconRed.ico" # Needs .ico
 WINDOW_ICON_PATH = "#{temp_dir}/icon.gif" # Needs .gif
 
 #####################
@@ -58,6 +59,15 @@ $top_window.protocol(:WM_DELETE_WINDOW) {
     exit!
   end
 }
+
+
+# Event handler for deiconify top window
+$top_window.bind('Map', proc{ |event|
+  if event.widget == $top_window && current_os == 'windows'
+    # Reset icon to default state
+    update_tray_icon($top_window, APPLICATION_TITLE, ICON_PATH)
+  end
+})
 
 $settings_window.protocol(:WM_DELETE_WINDOW) {
   $settings_window.grab(:release) 
@@ -687,26 +697,35 @@ def refresh()
   $refresh_button.text = 'Refresh Now'
   $add_thread_button.state = 'normal'
   $delete_thread_button.state = 'normal'
-  
-  if $settings['popups_enabled'] && $new_thread_data['total'] && $new_thread_data['total'] > 0
-    begin
-      $popup_notification.destroy
-    rescue
-    end
-  
-    report_msg = generate_report($new_thread_data)
-    close_popup_action = proc{
-      $popup_notification.destroy
-      $new_thread_data = {}
-    }
     
-    $popup_notification = show_dialog("#{$new_thread_data['total']} new post(s)! - #{APPLICATION_TITLE}", report_msg, nil, $root, close_popup_action)
-    
-    $popup_notification.iconphoto($window_icon)
+  if $new_thread_data['total'] && $new_thread_data['total'] > 0
+    new_posts_msg = "#{$new_thread_data['total']} new post(s)! - #{APPLICATION_TITLE}"
 
-    $popup_notification.protocol(:WM_DELETE_WINDOW) {
-      close_popup_action.call
-    }
+    if $settings['popups_enabled']
+      begin
+        $popup_notification.destroy
+      rescue
+      end
+    
+      report_msg = generate_report($new_thread_data)
+      close_popup_action = proc{
+        $popup_notification.destroy
+        $new_thread_data = {}
+      }
+      
+      $popup_notification = show_dialog("#{new_posts_msg}", report_msg, nil, $root, close_popup_action)
+      
+      $popup_notification.iconphoto($window_icon)
+
+      $popup_notification.protocol(:WM_DELETE_WINDOW) {
+        close_popup_action.call
+      }
+    end
+    
+    if current_os == 'windows'
+      # Change tooltip and icon
+      update_tray_icon($top_window, "#{new_posts_msg}", ICON_RED_PATH)
+    end
   end
 end
 

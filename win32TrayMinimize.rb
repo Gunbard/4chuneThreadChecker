@@ -112,6 +112,21 @@ def add_tray_minimize(window, tiptxt, icon_path)
 
 end
 
+# Updates the tooltip and/or icon image
+def update_tray_icon(window, tiptxt, new_icon_path)
+  icon = $ExtractIcon.call(0, new_icon_path, 0)
+  
+  $pnid = NOTIFYICONDATA.new
+  $pnid.hWnd = window.winfo_id.to_i(16)
+  $pnid.uID = 'ruby'.hash 
+  $pnid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE | NIF_SHOWTIP
+  $pnid.uCallbackMessage = WM_TRAYICON
+  $pnid.hIcon = icon
+  $pnid.szTip = tiptxt
+  
+  $Shell_NotifyIcon.call(NIM_MODIFY, $pnid.pack)
+end
+
 # Deletes the icon from the taskbar and tells to stop listening for minimize event
 def clean_tray_icon()
   $Shell_NotifyIcon.call(NIM_DELETE, $pnid.pack)
