@@ -524,10 +524,10 @@ $proxy_test_button.command = proc{
 # $returns A threadItem or nil if didn't get anything back
 def get_thread(url)
   # Validate url
-  url_pattern = /4chan.org\/(\w+)\/res\/(\d+)/
+  url_pattern = /4chan.org\/(\w+)\/(thread|res)\/(\d+)/
   board = url[url_pattern, 1]
-  thread_id = url[url_pattern, 2]
-  api_url = "http://a.4cdn.org/#{board}/res/#{thread_id}.json"
+  thread_id = url[url_pattern, 3]
+  api_url = "http://a.4cdn.org/#{board}/thread/#{thread_id}.json"
   
   unless board && thread_id
     puts "Malformed url: #{url}"
