@@ -788,6 +788,7 @@ def clear_info()
   $replies_label['textvariable'].value      = ''
   $images_label['textvariable'].value       = ''
   $date_add_label['textvariable'].value     = ''
+  $last_post_label['textvariable'].value    = ''
   $title_label['textvariable'].value        = ''
   $new_posts_label['textvariable'].value    = ''
   $status_label['textvariable'].value       = ''

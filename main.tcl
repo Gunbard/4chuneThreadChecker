@@ -298,9 +298,9 @@ proc vTclWindow. {base} {
     # CREATING WIDGETS
     ###################
     wm focusmodel $top passive
-    wm geometry $top 200x200+78+78; update
-    wm maxsize $top 1916 1053
-    wm minsize $top 124 1
+    wm geometry $top 200x200+48+48; update
+    wm maxsize $top 5762 1061
+    wm minsize $top 112 1
     wm overrideredirect $top 0
     wm resizable $top 1 1
     wm withdraw $top
@@ -330,7 +330,7 @@ proc vTclWindow.top45 {base} {
     vTcl:toplevel $top -class Toplevel
     wm withdraw $top
     wm focusmodel $top passive
-    wm geometry $top 410x321+742+291; update
+    wm geometry $top 410x342+742+291; update
     wm maxsize $top 1916 1053
     wm minsize $top 134 10
     wm overrideredirect $top 0
@@ -423,7 +423,7 @@ proc vTclWindow.top45 {base} {
     scrollbar $top.scr69
     vTcl:DefineAlias "$top.scr69" "Scrollbar1" vTcl:WidgetProc "Toplevel1" 1
     label $top.lab71 \
-        -text { } 
+        -text { } -width 392 -wraplength 392 
     vTcl:DefineAlias "$top.lab71" "Label2" vTcl:WidgetProc "Toplevel1" 1
     button $top.but72 \
         -pady 0 -text {Refresh Now} 
@@ -496,7 +496,7 @@ proc vTclWindow.top45 {base} {
         -in $top -x 161 -y 43 -width 17 -height 176 -anchor nw \
         -bordermode ignore 
     place $top.lab71 \
-        -in $top -x 10 -y 270 -width 392 -height 24 -anchor nw \
+        -in $top -x 10 -y 270 -width 392 -height 54 -anchor nw \
         -bordermode ignore 
     place $top.but72 \
         -in $top -x 35 -y 5 -width 87 -height 34 -anchor nw \
