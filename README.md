@@ -6,6 +6,7 @@ External thread watcher for 4chan. Uses 4chan's API.
 
 Version history
 -------
+- 0.4: Update for new URL API, tray icon changes for new posts
 - 0.3: Mark threads as read, add proxy settings
 - 0.2: Fix the whole 999999 popups thing, center windows, improve tray behavior
 - 0.1: External thread updater
