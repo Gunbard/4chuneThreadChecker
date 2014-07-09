@@ -7,6 +7,7 @@ require 'open-uri'
 require 'json'
 require 'tk'
 require 'htmlentities'
+require 'digest/md5'
 require_relative 'tkcommon'
 require_relative 'threadItem'
 
@@ -647,8 +648,7 @@ def refresh()
     return
   end
   
-  # Reload saved data in the event it changed
-  load_threads
+  new_stuff = false
   
   $thread_data.each_with_index do |thread_item, index|
     unless thread_item.enabled
@@ -659,6 +659,8 @@ def refresh()
     if updated_thread_item
       new_posts = updated_thread_item.replies - thread_item.replies
       if new_posts > 0
+        new_stuff = true
+        
         updated_thread_item.new_posts = thread_item.new_posts + new_posts
         
         if $new_thread_data[index] && $new_thread_data[index] > 0
@@ -690,7 +692,7 @@ def refresh()
   end
   
   refresh_list
-  save_threads
+  save_threads if new_stuff
   
   # Enable buttons
   $refresh_button.state = 'normal'
@@ -809,10 +811,21 @@ end
 
 # Save $thread_data to file
 def save_threads()
+  # Before saving, ensure save file was not modified during refresh
+  previous_checksum = $settings['save_file_checksum']
+  current_checksum = save_file_checksum
+  
+  if previous_checksum.length > 0 && previous_checksum != current_checksum
+    puts 'There is a save file conflict'
+    
+    # TODO: Do something about conflict
+  end
+
   File.open("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}", 'wb') do |file|
     Marshal.dump($thread_data, file)
   end
   
+  save_checksum
   puts 'Saved thread data to file'
 end
 
@@ -837,6 +850,17 @@ def load_threads()
   refresh_list
   
   puts 'Loaded saved thread data'
+end
+
+# @returns The checksum for the save file
+def save_file_checksum()
+  Digest::MD5.file("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}").hexdigest
+end
+
+# Sets the checksum of the save file in the settings
+def save_checksum()
+  $settings['save_file_checksum'] = save_file_checksum
+  save_settings
 end
 
 # Save $settings to file
@@ -942,6 +966,7 @@ $settings = {
   'save_load_directory' => $default_save_load_dir,
   'refresh_rate' => $default_refresh_rate,
   'popups_enabled' => $default_popups_enabled,
+  'save_file_checksum' => '',
   'proxy_url' => ''
 }
 
