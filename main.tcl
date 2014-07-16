@@ -241,6 +241,7 @@ proc vTcl:project:info {} {
     set site_3_0 $base.lab65
     set site_3_0 $base.lab56
     set site_3_0 $base.lab57
+    set site_3_0 $base.lab46
     set base .top48
     namespace eval ::widgets::$base {
         set set,origin 0
@@ -298,8 +299,8 @@ proc vTclWindow. {base} {
     # CREATING WIDGETS
     ###################
     wm focusmodel $top passive
-    wm geometry $top 200x200+48+48; update
-    wm maxsize $top 5762 1061
+    wm geometry $top 200x200+168+168; update
+    wm maxsize $top 7122 1061
     wm minsize $top 112 1
     wm overrideredirect $top 0
     wm resizable $top 1 1
@@ -327,10 +328,11 @@ proc vTclWindow.top45 {base} {
     ###################
     # CREATING WIDGETS
     ###################
-    vTcl:toplevel $top -class Toplevel
+    vTcl:toplevel $top -class Toplevel \
+        -menu "$top.m45" 
     wm withdraw $top
     wm focusmodel $top passive
-    wm geometry $top 410x342+742+291; update
+    wm geometry $top 410x404+742+291; update
     wm maxsize $top 1916 1053
     wm minsize $top 134 10
     wm overrideredirect $top 0
@@ -456,6 +458,41 @@ proc vTclWindow.top45 {base} {
     button $top.but45 \
         -pady 0 -state disabled -text {Mark Read} 
     vTcl:DefineAlias "$top.but45" "Button5" vTcl:WidgetProc "Toplevel1" 1
+    menu $top.m45 \
+        -activeborderwidth 1 -borderwidth 1 -tearoff 1 
+    labelframe $top.lab46 \
+        -text {Image Auto Download} -height 55 -width 395 
+    vTcl:DefineAlias "$top.lab46" "Labelframe9" vTcl:WidgetProc "Toplevel1" 1
+    set site_3_0 $top.lab46
+    button $site_3_0.but47 \
+        -pady 0 -text {Set Dir.} 
+    vTcl:DefineAlias "$site_3_0.but47" "Button6" vTcl:WidgetProc "Toplevel1" 1
+    button $site_3_0.but48 \
+        -pady 0 -text Clear 
+    vTcl:DefineAlias "$site_3_0.but48" "Button7" vTcl:WidgetProc "Toplevel1" 1
+    label $site_3_0.lab49 \
+        -relief groove 
+    vTcl:DefineAlias "$site_3_0.lab49" "Label11" vTcl:WidgetProc "Toplevel1" 1
+    label $site_3_0.lab50 \
+        -relief ridge -text Idle 
+    vTcl:DefineAlias "$site_3_0.lab50" "Label12" vTcl:WidgetProc "Toplevel1" 1
+    label $site_3_0.lab51 \
+        -text Status: 
+    vTcl:DefineAlias "$site_3_0.lab51" "Label13" vTcl:WidgetProc "Toplevel1" 1
+    place $site_3_0.but47 \
+        -in $site_3_0 -x 130 -y 15 -width 54 -height 35 -anchor nw \
+        -bordermode ignore 
+    place $site_3_0.but48 \
+        -in $site_3_0 -x 185 -y 15 -width 39 -height 35 -anchor nw \
+        -bordermode ignore 
+    place $site_3_0.lab49 \
+        -in $site_3_0 -x 5 -y 20 -width 122 -height 29 -anchor nw \
+        -bordermode ignore 
+    place $site_3_0.lab50 \
+        -in $site_3_0 -x 300 -y 15 -width 87 -height 34 -anchor nw \
+        -bordermode ignore 
+    place $site_3_0.lab51 \
+        -in $site_3_0 -x 255 -y 20 -anchor nw -bordermode ignore 
     ###################
     # SETTING GEOMETRY
     ###################
@@ -496,7 +533,7 @@ proc vTclWindow.top45 {base} {
         -in $top -x 161 -y 43 -width 17 -height 176 -anchor nw \
         -bordermode ignore 
     place $top.lab71 \
-        -in $top -x 10 -y 270 -width 392 -height 54 -anchor nw \
+        -in $top -x 10 -y 330 -width 392 -height 49 -anchor nw \
         -bordermode ignore 
     place $top.but72 \
         -in $top -x 35 -y 5 -width 87 -height 34 -anchor nw \
@@ -515,6 +552,9 @@ proc vTclWindow.top45 {base} {
         -bordermode ignore 
     place $top.but45 \
         -in $top -x 105 -y 235 -width 87 -height 34 -anchor nw \
+        -bordermode ignore 
+    place $top.lab46 \
+        -in $top -x 10 -y 275 -width 395 -height 55 -anchor nw \
         -bordermode ignore 
 
     vTcl:FireEvent $base <<Ready>>

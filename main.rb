@@ -10,6 +10,7 @@ require 'htmlentities'
 require 'digest/md5'
 require_relative 'tkcommon'
 require_relative 'threadItem'
+require_relative 'downloadManager'
 
 temp_dir = File.dirname($0)
 Tk.tk_call('source', "#{temp_dir}/main.tcl")
@@ -170,6 +171,7 @@ menu_opt_tools.add :command, :label => 'Wipe out list', :command => proc{
   
   $thread_data = []
   refresh_list
+  save_threads
 }
 
 # Help
@@ -205,6 +207,10 @@ $images_label           = wpath($top_window, '.top45.lab61.lab77')
 $date_add_label         = wpath($top_window, '.top45.lab65.lab78')
 $title_label            = wpath($top_window, '.top45.lab55.lab56')
 $last_post_label        = wpath($top_window, '.top45.lab57.lab58')
+$autoDL_dir_label       = wpath($top_window, '.top45.lab46.lab49')
+$autoDL_dir_button      = wpath($top_window, '.top45.lab46.but47')
+$autoDL_clear_button    = wpath($top_window, '.top45.lab46.but48')
+$autoDL_status_label    = wpath($top_window, '.top45.lab46.lab50')
 
 # Settings window
 $save_load_button       = wpath($settings_window, '.top48.but52')
@@ -232,28 +238,30 @@ $thread_listbox[:exportselection] = 'false'
 $thread_scrollbar[:command] = proc{|*args| $thread_listbox.yview(*args)}
 
 # Labels (must use textvariable)
-$url_label['textvariable']          = TkVariable.new
-$status_label['textvariable']       = TkVariable.new
-$board_label['textvariable']        = TkVariable.new
-$date_label['textvariable']         = TkVariable.new
-$replies_label['textvariable']      = TkVariable.new
-$images_label['textvariable']       = TkVariable.new
-$date_add_label['textvariable']     = TkVariable.new
-$title_label['textvariable']        = TkVariable.new
-$save_load_label['textvariable']    = TkVariable.new
-$new_posts_label['textvariable']    = TkVariable.new
-$last_post_label['textvariable']    = TkVariable.new
+$url_label['textvariable']            = TkVariable.new
+$status_label['textvariable']         = TkVariable.new
+$board_label['textvariable']          = TkVariable.new
+$date_label['textvariable']           = TkVariable.new
+$replies_label['textvariable']        = TkVariable.new
+$images_label['textvariable']         = TkVariable.new
+$date_add_label['textvariable']       = TkVariable.new
+$title_label['textvariable']          = TkVariable.new
+$save_load_label['textvariable']      = TkVariable.new
+$new_posts_label['textvariable']      = TkVariable.new
+$last_post_label['textvariable']      = TkVariable.new
+$autoDL_dir_label['textvariable']     = TkVariable.new
+$autoDL_status_label['textvariable']  = TkVariable.new
 
 # Entry boxes
-$add_thread_entry.textvariable      = TkVariable.new
-$rate_entry.textvariable            = TkVariable.new
-$proxy_url_entry.textvariable       = TkVariable.new
-$proxy_uname_entry.textvariable     = TkVariable.new
-$proxy_pword_entry.textvariable     = TkVariable.new
+$add_thread_entry.textvariable        = TkVariable.new
+$rate_entry.textvariable              = TkVariable.new
+$proxy_url_entry.textvariable         = TkVariable.new
+$proxy_uname_entry.textvariable       = TkVariable.new
+$proxy_pword_entry.textvariable       = TkVariable.new
 
 # Check boxes
-$enabled_check.variable             = TkVariable.new
-$popups_enabled_check.variable      = TkVariable.new
+$enabled_check.variable               = TkVariable.new
+$popups_enabled_check.variable        = TkVariable.new
 
 # Right-click menu for entry boxes
 add_thread_menu = TkMenu.new($add_thread_entry)
@@ -420,6 +428,37 @@ $mark_read_button.command = proc{
   save_threads
 }
 
+# Set image auto download location
+$autoDL_dir_button.command = proc{
+  selected_index = $thread_listbox.curselection[0]
+  if !selected_index
+    next
+  end
+  
+  thread_item = $thread_data[selected_index]
+  
+  dir_path = Tk::chooseDirectory(:parent => $top_window, 
+                                 :initialdir => $settings['save_directories'][thread_item.url])
+  if dir_path && dir_path.length > 0
+    $settings['save_directories'][thread_item.url] = dir_path
+    save_settings
+    refresh_info(selected_index)
+  end
+}
+
+# Clear image auto download location
+$autoDL_clear_button.command = proc{
+  selected_index = $thread_listbox.curselection[0]
+  if !selected_index
+    next
+  end
+  
+  thread_item = $thread_data[selected_index]
+  $settings['save_directories'].delete(thread_item.url)
+  save_settings
+  refresh_info(selected_index)
+}
+
 ### Settings
 
 # Open save/load folder dialog
@@ -578,6 +617,20 @@ def get_thread(url)
     thread_data = response_data['posts'][0]
     last_item = response_data['posts'].last
 
+    thread_images = []
+    
+    # Generate list of image urls from thread
+    response_data['posts'].each do |post|
+      # 'filename' is the original filename, 'tim' is the image's url
+      filename = post['tim']
+      ext = post['ext']
+    
+      if filename && ext
+        img_url = "http://i.4cdn.org/#{board}/#{filename}#{ext}"
+        thread_images.push(img_url)
+      end
+    end
+    
     new_thread_item = ThreadItem.new
     new_thread_item.replies = thread_data['replies']
     new_thread_item.images = thread_data['images']
@@ -587,6 +640,7 @@ def get_thread(url)
     new_thread_item.title = 'No title'
     new_thread_item.url = url
     new_thread_item.last_post = last_item['time']
+    new_thread_item.image_urls = thread_images
 
     title = 'No title'
     
@@ -629,7 +683,7 @@ end
 # Updates latest data for all threads in list
 # This method iterates through thread_data and requests
 # for the latest data.
-def refresh()  
+def refresh  
   $refresh_button.state = 'disabled'
   $refresh_button.text = 'Refreshing...'
   $add_thread_button.state = 'disabled'
@@ -686,6 +740,9 @@ def refresh()
       updated_thread_item.date_added = thread_item.date_added
       
       $thread_data[index] = updated_thread_item
+      
+      save_dir = $settings['save_directories'][thread_item.url]
+      $download_manager.update_image_urls(updated_thread_item.url, updated_thread_item.image_urls, save_dir)
     else
       $thread_data[index].deleted = true
     end
@@ -693,6 +750,7 @@ def refresh()
   
   refresh_list
   save_threads if new_stuff
+  $download_manager.process_threads
   
   # Enable buttons
   $refresh_button.state = 'normal'
@@ -723,6 +781,8 @@ def refresh()
         close_popup_action.call
       }
     end
+    
+    $download_manager.images
     
     if current_os == 'windows' && $top_window.state != 'normal'
       # Change tooltip and icon
@@ -764,6 +824,11 @@ def refresh_info(index)
   $new_posts_label['textvariable'].value    = thread_item.new_posts
   $last_post_label['textvariable'].value    = thread_item.last_post_display
   $enabled_check['variable'].value          = thread_item.enabled
+  
+  # Save directory
+  save_path = $settings['save_directories'][thread_item.url]
+  save_dir_display = (save_path) ? File.split(save_path)[1] : ''
+  $autoDL_dir_label['textvariable'].value = save_dir_display
   
   if thread_item.new_posts > 0
     $new_posts_label['foreground'] = '#009900'
@@ -900,7 +965,7 @@ end
 # Selects a thread in the listbox
 def select_thread(index)
   if index < 0 || index > $thread_data.length
-    puts "Attempted to select out of bounds index: #{index}"
+    puts "[WARN] Attempted to select out of bounds index: #{index}"
     return
   end
 
@@ -965,12 +1030,13 @@ $default_save_load_dir = Dir.pwd
 $default_refresh_rate = 3
 $default_popups_enabled = false;
 
-# Hash containing default settings
+# Hash containing default settings. settings.dat should be deleted if this is updated.
 $settings = {
   'save_load_directory' => $default_save_load_dir,
   'refresh_rate' => $default_refresh_rate,
   'popups_enabled' => $default_popups_enabled,
   'save_file_checksum' => '',
+  'save_directories' => {}, # Format {thread url: directory string}
   'proxy_url' => ''
 }
 
@@ -985,5 +1051,11 @@ load_threads
 # Start refresh timer
 refresh_timer = TkTimer.new($settings['refresh_rate'] * 60000, -1, proc{refresh})
 refresh_timer.start
+
+# Start download manager
+$download_manager = DownloadManager.new
+
+# Default downloader status as idle
+$autoDL_status_label['textvariable'].value = 'Idle'
 
 Tk.mainloop
