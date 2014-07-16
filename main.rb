@@ -10,6 +10,7 @@ require 'htmlentities'
 require 'digest/md5'
 require_relative 'tkcommon'
 require_relative 'threadItem'
+require_relative 'downloadManager'
 
 temp_dir = File.dirname($0)
 Tk.tk_call('source', "#{temp_dir}/main.tcl")
@@ -599,6 +600,19 @@ def get_thread(url)
     thread_data = response_data['posts'][0]
     last_item = response_data['posts'].last
 
+    thread_images = []
+    
+    # Generate list of image urls from thread
+    response_data['posts'].each do |post|
+      filename = post['filename']
+      ext = post['ext']
+    
+      if filename && ext
+        url = "http://i.4cdn.org/#{board}/#{filename}#{ext}"
+        thread_images.push(url)
+      end
+    end
+    
     new_thread_item = ThreadItem.new
     new_thread_item.replies = thread_data['replies']
     new_thread_item.images = thread_data['images']
@@ -608,6 +622,7 @@ def get_thread(url)
     new_thread_item.title = 'No title'
     new_thread_item.url = url
     new_thread_item.last_post = last_item['time']
+    new_thread_item.image_urls = thread_images
 
     title = 'No title'
     
