@@ -205,6 +205,10 @@ $images_label           = wpath($top_window, '.top45.lab61.lab77')
 $date_add_label         = wpath($top_window, '.top45.lab65.lab78')
 $title_label            = wpath($top_window, '.top45.lab55.lab56')
 $last_post_label        = wpath($top_window, '.top45.lab57.lab58')
+$autoDL_dir_label       = wpath($top_window, '.top45.lab46.lab49')
+$autoDL_dir_button      = wpath($top_window, '.top45.lab46.but47')
+$autoDL_clear_button    = wpath($top_window, '.top45.lab46.but48')
+$autoDL_status_label    = wpath($top_window, '.top45.lab46.lab50')
 
 # Settings window
 $save_load_button       = wpath($settings_window, '.top48.but52')
@@ -232,28 +236,30 @@ $thread_listbox[:exportselection] = 'false'
 $thread_scrollbar[:command] = proc{|*args| $thread_listbox.yview(*args)}
 
 # Labels (must use textvariable)
-$url_label['textvariable']          = TkVariable.new
-$status_label['textvariable']       = TkVariable.new
-$board_label['textvariable']        = TkVariable.new
-$date_label['textvariable']         = TkVariable.new
-$replies_label['textvariable']      = TkVariable.new
-$images_label['textvariable']       = TkVariable.new
-$date_add_label['textvariable']     = TkVariable.new
-$title_label['textvariable']        = TkVariable.new
-$save_load_label['textvariable']    = TkVariable.new
-$new_posts_label['textvariable']    = TkVariable.new
-$last_post_label['textvariable']    = TkVariable.new
+$url_label['textvariable']            = TkVariable.new
+$status_label['textvariable']         = TkVariable.new
+$board_label['textvariable']          = TkVariable.new
+$date_label['textvariable']           = TkVariable.new
+$replies_label['textvariable']        = TkVariable.new
+$images_label['textvariable']         = TkVariable.new
+$date_add_label['textvariable']       = TkVariable.new
+$title_label['textvariable']          = TkVariable.new
+$save_load_label['textvariable']      = TkVariable.new
+$new_posts_label['textvariable']      = TkVariable.new
+$last_post_label['textvariable']      = TkVariable.new
+$autoDL_dir_label['textvariable']     = TkVariable.new
+$autoDL_status_label['textvariable']  = TkVariable.new
 
 # Entry boxes
-$add_thread_entry.textvariable      = TkVariable.new
-$rate_entry.textvariable            = TkVariable.new
-$proxy_url_entry.textvariable       = TkVariable.new
-$proxy_uname_entry.textvariable     = TkVariable.new
-$proxy_pword_entry.textvariable     = TkVariable.new
+$add_thread_entry.textvariable        = TkVariable.new
+$rate_entry.textvariable              = TkVariable.new
+$proxy_url_entry.textvariable         = TkVariable.new
+$proxy_uname_entry.textvariable       = TkVariable.new
+$proxy_pword_entry.textvariable       = TkVariable.new
 
 # Check boxes
-$enabled_check.variable             = TkVariable.new
-$popups_enabled_check.variable      = TkVariable.new
+$enabled_check.variable               = TkVariable.new
+$popups_enabled_check.variable        = TkVariable.new
 
 # Right-click menu for entry boxes
 add_thread_menu = TkMenu.new($add_thread_entry)
@@ -418,6 +424,21 @@ $mark_read_button.command = proc{
   $thread_data[selected_index].new_posts = 0
   refresh_list
   save_threads
+}
+
+# Set image auto download location
+$autoDL_dir_button.command = proc{
+  dirname = Tk::chooseDirectory(:parent => $settings_window, :initialdir => $settings['save_load_directory'])
+  if dirname && dirname.length > 0
+    # Save this somewhere
+    $autoDL_dir_label['textvariable'].value = File.split(dirname)[1]
+  end
+}
+
+# Clear image auto download location
+$autoDL_clear_button.command = proc{
+  # Clear it somewhere
+  $autoDL_dir_label['textvariable'].value = ''
 }
 
 ### Settings

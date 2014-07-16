@@ -8,7 +8,7 @@ class ThreadItem
   
   TITLE_MAX_LENGTH = 65
   
-  def initialize()
+  def initialize
    @replies = ''     # Number of replies in a thread
    @images = ''      # Number of images in a thread
    @date = ''        # Date of post (UNIX timestamp)
