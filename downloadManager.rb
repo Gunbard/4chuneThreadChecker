@@ -12,28 +12,21 @@ class DownloadManager
   def initialize
   
   end
-  
+
   
   # Download a single resource
   # TODO: Handle file name conflict
   # @param {string} url The url to download
   def download_url(url)
+    # Open resource
+  
+    # Check if file already exists
     
-    # Create a temp file while downloading
+    # Create a temp file for downloading
+    
+    # Update status for thread
     
     # Rename temp file when complete
   end
-  
-  
-  #def execute_queue
-  #  unless @queue.empty?
-  #    Thread.new do
-  #      until @queue.empty? || @save_dir.length == 0
-  #        url = @queue.pop(false)
-  #        puts url.inspect
-  #      end
-  #    end
-  #  end
-  #end
   
 end
