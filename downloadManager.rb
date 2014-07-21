@@ -14,13 +14,13 @@ class DownloadManager
 
   def initialize
     # Thread image urls by thread
-    # 
+    # {
     #   thread_url: 
     #   {
     #     dir: "/save directory"
     #     images: [list of image urls]
     #   }
-    # 
+    # }
     @thread_images = {}
   
     # Make pool of reusable threads (4)
@@ -29,13 +29,13 @@ class DownloadManager
   # Adds list of urls to download manager's list for the given thread
   # @param {string} 
   def update_image_urls(thread_url, image_urls, save_dir)
-    #thread_info = 
-    #{
-    #  dir: save_dir,
-    #  images: image_urls
-    #}
+    thread_info = 
+    {
+      dir: save_dir,
+      images: image_urls
+    }
     
-    #@thread_images[thread_url] = thread_info
+    @thread_images[thread_url] = thread_info
   end
   
   def update_save_dir(thread_url, save_dir)
@@ -44,11 +44,13 @@ class DownloadManager
     end
   end
   
+  # Debug
   def images
     puts @thread_images.inspect
   end
   
   # Download a single resource to disk
+  # Currently overwrites duped files
   # @param {string} file_url The url to download
   def download_url(file_url)
     temp_ext = '.tmp'
@@ -69,6 +71,8 @@ class DownloadManager
     progress_proc = proc{ |size|
       #puts "#{((size.to_f / max_size) * 100).round(0)}%"
     }
+    
+    # Create save directory if it doesn't exist
     
     # Open url and save to disk
     begin
