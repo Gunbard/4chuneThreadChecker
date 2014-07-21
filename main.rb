@@ -608,8 +608,8 @@ def get_thread(url)
       ext = post['ext']
     
       if filename && ext
-        url = "http://i.4cdn.org/#{board}/#{filename}#{ext}"
-        thread_images.push(url)
+        img_url = "http://i.4cdn.org/#{board}/#{filename}#{ext}"
+        thread_images.push(img_url)
       end
     end
     
@@ -665,7 +665,7 @@ end
 # Updates latest data for all threads in list
 # This method iterates through thread_data and requests
 # for the latest data.
-def refresh()  
+def refresh  
   $refresh_button.state = 'disabled'
   $refresh_button.text = 'Refreshing...'
   $add_thread_button.state = 'disabled'
@@ -722,6 +722,7 @@ def refresh()
       updated_thread_item.date_added = thread_item.date_added
       
       $thread_data[index] = updated_thread_item
+      $download_manager.update_image_urls(updated_thread_item)
     else
       $thread_data[index].deleted = true
     end
@@ -759,6 +760,8 @@ def refresh()
         close_popup_action.call
       }
     end
+    
+    $download_manager.images
     
     if current_os == 'windows' && $top_window.state != 'normal'
       # Change tooltip and icon
@@ -1024,6 +1027,6 @@ refresh_timer.start
 
 # Start download manager
 $download_manager = DownloadManager.new
-$download_manager.download_url()
+#$download_manager.download_url()
 
 Tk.mainloop

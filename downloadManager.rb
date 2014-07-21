@@ -10,20 +10,35 @@
 require 'open-uri'
 
 class DownloadManager
+  attr_accessor :update_image_urls, :images, :download_url
 
   def initialize
+    # Thread image urls by thread
+    # {
+    #   thread_url: [list of image urls]
+    # }
+    @thread_images = {}
+  
     # Make pool of reusable threads (4)
   end
 
+  # Adds list of urls to download manager's list for the given thread
+  # @param {ThreadItem} The thread to update urls from
+  def update_image_urls(thread)
+    @thread_images[thread.url] = thread.image_urls
+  end
+  
+  def images
+    puts @thread_images.inspect
+  end
   
   # Download a single resource to disk
-  # TODO: Handle file name conflict
-  # @param {string} url The url to download
-  def download_url()
+  # @param {string} file_url The url to download
+  def download_url(file_url)
     temp_ext = '.tmp'
     max_size = 1
     max_size_display = ''
-    file_url = 'http://i.4cdn.org/jp/1405874412524.jpg'
+    #file_url = 'http://i.4cdn.org/jp/1405874412524.jpg'
     save_filename = File.basename(file_url)
     
     # Proc for determining expected file size
