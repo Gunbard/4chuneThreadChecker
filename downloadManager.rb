@@ -7,26 +7,64 @@
   Author: Gunbard
 =end
 
+require 'open-uri'
+
 class DownloadManager
 
   def initialize
-  
+    # Make pool of reusable threads (4)
   end
 
   
-  # Download a single resource
+  # Download a single resource to disk
   # TODO: Handle file name conflict
   # @param {string} url The url to download
-  def download_url(url)
-    # Open resource
-  
-    # Check if file already exists
+  def download_url()
+    temp_ext = '.tmp'
+    max_size = 1
+    max_size_display = ''
+    file_url = 'http://i.4cdn.org/jp/1405874412524.jpg'
+    save_filename = File.basename(file_url)
     
-    # Create a temp file for downloading
+    # Proc for determining expected file size
+    content_proc = proc{ |total|
+      if total && total > 0
+        max_size = total
+        max_size_display = "#{(total.to_f / 1000).round(0)}K"
+      end
+    }
     
-    # Update status for thread
+    # Proc for handling transfer status
+    progress_proc = proc{ |size|
+      #puts "#{((size.to_f / max_size) * 100).round(0)}%"
+    }
     
-    # Rename temp file when complete
+    # Open url and save to disk
+    begin
+      open(file_url, :content_length_proc => content_proc,
+      :progress_proc => progress_proc) do |data|
+        # Download as a temp file in case of error or connection loss
+        begin
+          File.open(save_filename + temp_ext, 'wb') do |file| 
+            file.write(data.read)
+          end
+        rescue
+          # Handle file open/write error
+        end
+        
+        # Rename temp file
+        begin 
+          File.rename(save_filename + temp_ext, save_filename)
+        rescue
+          # Handle rename error
+        end
+      end 
+    rescue
+      # Handle 404
+    end
+    
+    # Download complete
+    puts "Saved #{save_filename} (#{max_size_display}) to disk"
   end
   
 end

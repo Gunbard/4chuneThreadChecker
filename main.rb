@@ -1022,4 +1022,8 @@ load_threads
 refresh_timer = TkTimer.new($settings['refresh_rate'] * 60000, -1, proc{refresh})
 refresh_timer.start
 
+# Start download manager
+$download_manager = DownloadManager.new
+$download_manager.download_url()
+
 Tk.mainloop
