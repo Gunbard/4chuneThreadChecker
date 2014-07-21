@@ -722,7 +722,8 @@ def refresh
       updated_thread_item.date_added = thread_item.date_added
       
       $thread_data[index] = updated_thread_item
-      $download_manager.update_image_urls(updated_thread_item)
+      
+      #$download_manager.update_image_urls(updated_thread_item.url, updated_thread_item.image_urls, updated_thread_item.save_dir)
     else
       $thread_data[index].deleted = true
     end
@@ -761,7 +762,7 @@ def refresh
       }
     end
     
-    $download_manager.images
+    #$download_manager.images
     
     if current_os == 'windows' && $top_window.state != 'normal'
       # Change tooltip and icon

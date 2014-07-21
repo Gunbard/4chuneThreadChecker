@@ -14,18 +14,34 @@ class DownloadManager
 
   def initialize
     # Thread image urls by thread
-    # {
-    #   thread_url: [list of image urls]
-    # }
+    # 
+    #   thread_url: 
+    #   {
+    #     dir: "/save directory"
+    #     images: [list of image urls]
+    #   }
+    # 
     @thread_images = {}
   
     # Make pool of reusable threads (4)
   end
 
   # Adds list of urls to download manager's list for the given thread
-  # @param {ThreadItem} The thread to update urls from
-  def update_image_urls(thread)
-    @thread_images[thread.url] = thread.image_urls
+  # @param {string} 
+  def update_image_urls(thread_url, image_urls, save_dir)
+    #thread_info = 
+    #{
+    #  dir: save_dir,
+    #  images: image_urls
+    #}
+    
+    #@thread_images[thread_url] = thread_info
+  end
+  
+  def update_save_dir(thread_url, save_dir)
+    if @thread_images[thread_url]
+      @thread_images[thread_url].dir = save_dir
+    end
   end
   
   def images

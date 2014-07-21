@@ -4,7 +4,7 @@
 =end
 
 class ThreadItem
-  attr_accessor :replies, :images, :date, :board, :date_added, :title, :url, :new_posts, :enabled, :display_title, :display_color, :deleted, :last_post, :image_urls
+  attr_accessor :replies, :images, :date, :board, :date_added, :title, :url, :new_posts, :enabled, :display_title, :display_color, :deleted, :last_post, :image_urls, :save_dir
   
   TITLE_MAX_LENGTH = 65
   
@@ -21,6 +21,7 @@ class ThreadItem
    @deleted = false  # If thread was deleted
    @last_post = ''   # Date of last post
    @image_urls = []  # List of image urls
+   @save_dir = ''    # Location to save images
   end
   
   ### Getter overrides
