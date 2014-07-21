@@ -815,7 +815,7 @@ def save_threads()
   previous_checksum = $settings['save_file_checksum']
   current_checksum = save_file_checksum
   
-  if previous_checksum.length > 0 && previous_checksum != current_checksum
+  if previous_checksum && previous_checksum.length > 0 && previous_checksum != current_checksum
     puts 'There is a save file conflict'
     
     # TODO: Do something about conflict
@@ -854,7 +854,11 @@ end
 
 # @returns The checksum for the save file
 def save_file_checksum()
-  Digest::MD5.file("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}").hexdigest
+  if File.exists?("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}")
+    Digest::MD5.file("#{$settings['save_load_directory']}/#{SAVED_THREADS_FILENAME}").hexdigest
+  end
+  
+  nil
 end
 
 # Sets the checksum of the save file in the settings
