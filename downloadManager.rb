@@ -14,6 +14,8 @@ class DownloadManager
 
   def initialize
     # Thread image urls by thread
+    # This is continously updated to contain ALL URLs for EVERY ADDED THREAD
+    # meaning folders will be pretty much synced to the thread's images
     # {
     #   thread_url: 
     #   {
@@ -22,8 +24,26 @@ class DownloadManager
     #   }
     # }
     @thread_images = {}
+    
+    # List of urls that are currently downloading
+    # This can be used to clean up failed temp files
+    @in_progress = {}
   
+    # Work queue with hashes similar to @thread_images
+    @download_queue = Queue.new
+    
     # Make pool of reusable threads (4)
+    #4.times do
+    #  threads << Thread.new do
+    #    until @download_queue.empty?
+    #      thread_to_download = @download_queue.pop(true) rescue nil
+    #      if thread_to_download
+    #        # do work
+    #      end
+    #    end
+    #  end
+    #end
+    
   end
 
   # Adds list of urls to download manager's list for the given thread
@@ -52,7 +72,13 @@ class DownloadManager
   # Download a single resource to disk
   # Currently overwrites duped files
   # @param {string} file_url The url to download
-  def download_url(file_url)
+  # @param {string} save_location The path to save the file to
+  def download_url(file_url, save_location)
+    # Check if file is already downloading
+    #if @in_progress[file_url]
+    #  return
+    #end
+    
     temp_ext = '.tmp'
     max_size = 1
     max_size_display = ''
@@ -72,24 +98,27 @@ class DownloadManager
       #puts "#{((size.to_f / max_size) * 100).round(0)}%"
     }
     
-    # Create save directory if it doesn't exist
-    
     # Open url and save to disk
     begin
+      # Mark url as downloading
+      @in_progress[file_url] = 1
+      
       open(file_url, :content_length_proc => content_proc,
       :progress_proc => progress_proc) do |data|
-        # Download as a temp file in case of error or connection loss
+        
+        # Download as a temp file in case of error or connection loss so
+        # user can know if a file is corrupted/unfinished
         begin
-          File.open(save_filename + temp_ext, 'wb') do |file| 
+          File.open(save_location + '/' + save_filename + temp_ext, 'wb') do |file| 
             file.write(data.read)
           end
         rescue
-          # Handle file open/write error
+          # Handle file open/write/missing save directory error
         end
         
         # Rename temp file
         begin 
-          File.rename(save_filename + temp_ext, save_filename)
+          File.rename(save_location + '/' + save_filename + temp_ext, save_filename)
         rescue
           # Handle rename error
         end
@@ -98,8 +127,11 @@ class DownloadManager
       # Handle 404
     end
     
+    # Unmark in progress download
+    @in_progress.delete(file_url)
+    
     # Download complete
-    puts "Saved #{save_filename} (#{max_size_display}) to disk"
+    puts "[INFO: DMAN] Saved #{save_filename} (#{max_size_display}) to disk"
   end
   
 end
