@@ -47,7 +47,9 @@ class DownloadManager
   end
 
   # Adds list of urls to download manager's list for the given thread
-  # @param {string} 
+  # @param {string} thread_url The url of the thread, used as a key
+  # @param {array} image_urls An array of image urls
+  # @param {string} save_dir Path to save images to
   def update_image_urls(thread_url, image_urls, save_dir)
     thread_info = 
     {
@@ -56,12 +58,6 @@ class DownloadManager
     }
     
     @thread_images[thread_url] = thread_info
-  end
-  
-  def update_save_dir(thread_url, save_dir)
-    if @thread_images[thread_url]
-      @thread_images[thread_url].dir = save_dir
-    end
   end
   
   # Debug
