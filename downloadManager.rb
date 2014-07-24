@@ -21,6 +21,7 @@ class DownloadManager
     #   {
     #     dir: "/save directory"
     #     images: [list of image urls]
+    #     dirty: bool for whether or not thread has new images
     #   }
     # }
     @thread_images = {}
@@ -32,6 +33,60 @@ class DownloadManager
     # Work queue with hashes similar to @thread_images
     @download_queue = Queue.new
     
+    start_workers
+  end
+
+  # Adds list of urls to download manager's list for the given thread
+  # @param {string} thread_url The url of the thread, used as a key
+  # @param {array} image_urls An array of image urls
+  # @param {string} save_dir Path to save images to
+  def update_image_urls(thread_url, image_urls, save_dir)
+    thread_info = {
+      dir: save_dir,
+      images: image_urls,
+      dirty: true
+    }
+    
+    @thread_images[thread_url] = thread_info
+  end
+  
+  # Debug
+  def images
+    puts @thread_images.inspect
+  end
+  
+  # Goes through the thread url list and adds non-downloaded images urls
+  # to the work queue
+  def process_threads
+    @thread_images.each do |key, value|
+      if value.dirty
+        value.images.each do |image|
+          unless save_dir || save_dir.length > 0
+            next
+          end
+        
+          file_path = value.save_dir + '/' + File.basename(image)
+          if @in_progress[image] || File.exists?(file_path)
+            # Skip if already downloading/downloaded
+            next
+          end
+          
+          value.dirty = false
+          
+          work_data = {
+            image_url: image,
+            image_path: save_dir
+          }
+          
+          # Add to queue
+          @download_queue.push(work_data)
+        end
+      end
+    end
+  end
+  
+  #
+  def start_workers
     # Make pool of reusable threads (4)
     #4.times do
     #  threads << Thread.new do
@@ -43,26 +98,6 @@ class DownloadManager
     #    end
     #  end
     #end
-    
-  end
-
-  # Adds list of urls to download manager's list for the given thread
-  # @param {string} thread_url The url of the thread, used as a key
-  # @param {array} image_urls An array of image urls
-  # @param {string} save_dir Path to save images to
-  def update_image_urls(thread_url, image_urls, save_dir)
-    thread_info = 
-    {
-      dir: save_dir,
-      images: image_urls
-    }
-    
-    @thread_images[thread_url] = thread_info
-  end
-  
-  # Debug
-  def images
-    puts @thread_images.inspect
   end
   
   # Download a single resource to disk
@@ -70,11 +105,6 @@ class DownloadManager
   # @param {string} file_url The url to download
   # @param {string} save_location The path to save the file to
   def download_url(file_url, save_location)
-    # Check if file is already downloading
-    #if @in_progress[file_url]
-    #  return
-    #end
-    
     temp_ext = '.tmp'
     max_size = 1
     max_size_display = ''
