@@ -8,9 +8,12 @@
 =end
 
 require 'open-uri'
+require_relative 'downloadWorker'
+
+MAX_WORKERS = 4
 
 class DownloadManager
-  attr_accessor :update_image_urls, :images, :download_url
+  attr_accessor :update_image_urls, :images, :in_progress, :download_queue, :process_threads
 
   def initialize
     # Thread image urls by thread
@@ -33,7 +36,10 @@ class DownloadManager
     # Work queue with hashes similar to @thread_images
     @download_queue = Queue.new
     
-    start_workers
+    # List of DownloadWorkers
+    @workers = []
+    
+    create_workers
   end
 
   # Adds list of urls to download manager's list for the given thread
@@ -52,30 +58,31 @@ class DownloadManager
   
   # Debug
   def images
-    puts @thread_images.inspect
+    #puts @thread_images.inspect
   end
   
-  # Goes through the thread url list and adds non-downloaded images urls
+  # Goes through the thread url list and adds non-downloaded image urls
   # to the work queue
   def process_threads
     @thread_images.each do |key, value|
-      if value.dirty
-        value.images.each do |image|
-          unless save_dir || save_dir.length > 0
+      if value[:dirty]
+        value[:images].each do |image|
+          if !value[:dir] || value[:dir].length == 0
+            # Skip if save directory not set
             next
           end
         
-          file_path = value.save_dir + '/' + File.basename(image)
+          file_path = value[:dir] + '/' + File.basename(image)
           if @in_progress[image] || File.exists?(file_path)
             # Skip if already downloading/downloaded
             next
           end
           
-          value.dirty = false
+          value[:dirty] = false
           
           work_data = {
             image_url: image,
-            image_path: save_dir
+            image_path: value[:dir]
           }
           
           # Add to queue
@@ -83,81 +90,17 @@ class DownloadManager
         end
       end
     end
+    
+    # DEBUG
+    #@download_queue.push({image_url: 'http://i.4cdn.org/jp/1406235024432.jpg', image_path: ''})
+    #puts "Download queue: #{@download_queue.inspect}"
   end
   
-  #
-  def start_workers
-    # Make pool of reusable threads (4)
-    #4.times do
-    #  threads << Thread.new do
-    #    until @download_queue.empty?
-    #      thread_to_download = @download_queue.pop(true) rescue nil
-    #      if thread_to_download
-    #        # do work
-    #      end
-    #    end
-    #  end
-    #end
-  end
-  
-  # Download a single resource to disk
-  # Currently overwrites duped files
-  # @param {string} file_url The url to download
-  # @param {string} save_location The path to save the file to
-  def download_url(file_url, save_location)
-    temp_ext = '.tmp'
-    max_size = 1
-    max_size_display = ''
-    #file_url = 'http://i.4cdn.org/jp/1405874412524.jpg'
-    save_filename = File.basename(file_url)
-    
-    # Proc for determining expected file size
-    content_proc = proc{ |total|
-      if total && total > 0
-        max_size = total
-        max_size_display = "#{(total.to_f / 1000).round(0)}K"
-      end
-    }
-    
-    # Proc for handling transfer status
-    progress_proc = proc{ |size|
-      #puts "#{((size.to_f / max_size) * 100).round(0)}%"
-    }
-    
-    # Open url and save to disk
-    begin
-      # Mark url as downloading
-      @in_progress[file_url] = 1
-      
-      open(file_url, :content_length_proc => content_proc,
-      :progress_proc => progress_proc) do |data|
-        
-        # Download as a temp file in case of error or connection loss so
-        # user can know if a file is corrupted/unfinished
-        begin
-          File.open(save_location + '/' + save_filename + temp_ext, 'wb') do |file| 
-            file.write(data.read)
-          end
-        rescue
-          # Handle file open/write/missing save directory error
-        end
-        
-        # Rename temp file
-        begin 
-          File.rename(save_location + '/' + save_filename + temp_ext, save_filename)
-        rescue
-          # Handle rename error
-        end
-      end 
-    rescue
-      # Handle 404
+  # Creates workers to do werk
+  def create_workers
+    MAX_WORKERS.times do
+      @workers.push(DownloadWorker.new(self))
     end
-    
-    # Unmark in progress download
-    @in_progress.delete(file_url)
-    
-    # Download complete
-    puts "[INFO: DMAN] Saved #{save_filename} (#{max_size_display}) to disk"
   end
   
 end

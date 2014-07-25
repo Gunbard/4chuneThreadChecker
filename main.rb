@@ -429,17 +429,29 @@ $mark_read_button.command = proc{
 
 # Set image auto download location
 $autoDL_dir_button.command = proc{
-  dirname = Tk::chooseDirectory(:parent => $settings_window, :initialdir => $settings['save_load_directory'])
-  if dirname && dirname.length > 0
-    # Save this somewhere
-    $autoDL_dir_label['textvariable'].value = File.split(dirname)[1]
+  dir_path = Tk::chooseDirectory(:parent => $settings_window, :initialdir => $settings['save_load_directory'])
+  if dir_path && dir_path.length > 0
+    selected_index = $thread_listbox.curselection[0]
+    if !selected_index
+      next
+    end
+    
+    $thread_data[selected_index].save_dir = dir_path
+    save_threads
+    refresh_info(selected_index)
   end
 }
 
 # Clear image auto download location
 $autoDL_clear_button.command = proc{
-  # Clear it somewhere
-  $autoDL_dir_label['textvariable'].value = ''
+  selected_index = $thread_listbox.curselection[0]
+  if !selected_index
+    next
+  end
+  
+  $thread_data[selected_index].save_dir = ''
+  save_threads
+  refresh_info(selected_index)
 }
 
 ### Settings
@@ -604,7 +616,8 @@ def get_thread(url)
     
     # Generate list of image urls from thread
     response_data['posts'].each do |post|
-      filename = post['filename']
+      # 'filename' is the original filename, 'tim' is the image's url
+      filename = post['tim']
       ext = post['ext']
     
       if filename && ext
@@ -720,6 +733,7 @@ def refresh
       # Don't update certain properties
       updated_thread_item.enabled = thread_item.enabled
       updated_thread_item.date_added = thread_item.date_added
+      updated_thread_item.save_dir = thread_item.save_dir
       
       $thread_data[index] = updated_thread_item
       
@@ -731,6 +745,7 @@ def refresh
   
   refresh_list
   save_threads if new_stuff
+  $download_manager.process_threads
   
   # Enable buttons
   $refresh_button.state = 'normal'
@@ -804,6 +819,7 @@ def refresh_info(index)
   $new_posts_label['textvariable'].value    = thread_item.new_posts
   $last_post_label['textvariable'].value    = thread_item.last_post_display
   $enabled_check['variable'].value          = thread_item.enabled
+  $autoDL_dir_label['textvariable'].value   = thread_item.save_dir_display
   
   if thread_item.new_posts > 0
     $new_posts_label['foreground'] = '#009900'
@@ -940,7 +956,7 @@ end
 # Selects a thread in the listbox
 def select_thread(index)
   if index < 0 || index > $thread_data.length
-    puts "Attempted to select out of bounds index: #{index}"
+    puts "[WARN] Attempted to select out of bounds index: #{index}"
     return
   end
 

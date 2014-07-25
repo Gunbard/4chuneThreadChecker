@@ -4,7 +4,7 @@
 =end
 
 class ThreadItem
-  attr_accessor :replies, :images, :date, :board, :date_added, :title, :url, :new_posts, :enabled, :display_title, :display_color, :deleted, :last_post, :image_urls, :save_dir
+  attr_accessor :replies, :images, :date, :board, :date_added, :title, :url, :new_posts, :enabled, :display_title, :display_color, :deleted, :last_post, :image_urls, :save_dir, :save_dir_display
   
   TITLE_MAX_LENGTH = 65
   
@@ -78,5 +78,10 @@ class ThreadItem
     end
     
     '#000000'
+  end
+  
+  # Just shows the folder rather than the full path
+  def save_dir_display
+    File.split(@save_dir)[1]
   end
 end
