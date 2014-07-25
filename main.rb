@@ -429,12 +429,14 @@ $mark_read_button.command = proc{
 
 # Set image auto download location
 $autoDL_dir_button.command = proc{
-  dir_path = Tk::chooseDirectory(:parent => $settings_window, :initialdir => $settings['save_load_directory'])
+  selected_index = $thread_listbox.curselection[0]
+  if !selected_index
+    next
+  end
+
+  dir_path = Tk::chooseDirectory(:parent => $top_window, 
+                                 :initialdir => $thread_data[selected_index].save_dir)
   if dir_path && dir_path.length > 0
-    selected_index = $thread_listbox.curselection[0]
-    if !selected_index
-      next
-    end
     
     $thread_data[selected_index].save_dir = dir_path
     save_threads

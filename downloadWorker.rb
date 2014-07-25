@@ -69,7 +69,8 @@ class DownloadWorker
     # Open url and save to disk
     begin
       puts "[INFO: DMAN] #{self} starting download of #{file_url} to #{save_location}"
-
+    
+      errors = []
     
       # Mark url as downloading
       @manager.in_progress[file_url] = 1
@@ -86,7 +87,7 @@ class DownloadWorker
           end
         rescue Exception => msg
           # Handle file open/write/missing save directory error
-          puts "[ERROR] File open exception: #{msg}"
+          errors.push("[ERROR] File open exception: #{msg}")
         end
         
         # Rename temp file
@@ -94,19 +95,26 @@ class DownloadWorker
           File.rename(save_path, save_path.chomp(temp_ext))
         rescue Exception => msg
           # Handle rename error
-          puts "[ERROR] File rename exception: #{msg}"
+          errors.push("[ERROR] File rename exception: #{msg}")
         end
       end 
     rescue Exception => msg
       # Handle 404
-      puts "[ERROR] URL open exception: #{msg}"
+      errors.push("[ERROR] URL open exception: #{msg}")
     end
     
     # Unmark in progress download
     @manager.in_progress.delete(file_url)
     
-    # Download complete
-    puts "[INFO: DMAN] Saved #{save_filename} (#{max_size_display}) to disk"
+    if errors.length > 0
+      # Dump errors
+      errors.each do |error|
+        puts error
+      end
+    else
+      # Download complete
+      puts "[INFO: DMAN] Saved #{save_filename} (#{max_size_display}) to disk"
+    end
     
     @working = false
   end
