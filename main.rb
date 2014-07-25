@@ -171,6 +171,7 @@ menu_opt_tools.add :command, :label => 'Wipe out list', :command => proc{
   
   $thread_data = []
   refresh_list
+  save_threads
 }
 
 # Help
@@ -433,13 +434,14 @@ $autoDL_dir_button.command = proc{
   if !selected_index
     next
   end
-
+  
+  thread_item = $thread_data[selected_index]
+  
   dir_path = Tk::chooseDirectory(:parent => $top_window, 
-                                 :initialdir => $thread_data[selected_index].save_dir)
+                                 :initialdir => $settings['save_directories'][thread_item.url])
   if dir_path && dir_path.length > 0
-    
-    $thread_data[selected_index].save_dir = dir_path
-    save_threads
+    $settings['save_directories'][thread_item.url] = dir_path
+    save_settings
     refresh_info(selected_index)
   end
 }
@@ -451,8 +453,9 @@ $autoDL_clear_button.command = proc{
     next
   end
   
-  $thread_data[selected_index].save_dir = ''
-  save_threads
+  thread_item = $thread_data[selected_index]
+  $settings['save_directories'].delete(thread_item.url)
+  save_settings
   refresh_info(selected_index)
 }
 
@@ -735,11 +738,11 @@ def refresh
       # Don't update certain properties
       updated_thread_item.enabled = thread_item.enabled
       updated_thread_item.date_added = thread_item.date_added
-      updated_thread_item.save_dir = thread_item.save_dir
       
       $thread_data[index] = updated_thread_item
       
-      $download_manager.update_image_urls(updated_thread_item.url, updated_thread_item.image_urls, updated_thread_item.save_dir)
+      save_dir = $settings['save_directories'][thread_item.url]
+      $download_manager.update_image_urls(updated_thread_item.url, updated_thread_item.image_urls, save_dir)
     else
       $thread_data[index].deleted = true
     end
@@ -821,7 +824,11 @@ def refresh_info(index)
   $new_posts_label['textvariable'].value    = thread_item.new_posts
   $last_post_label['textvariable'].value    = thread_item.last_post_display
   $enabled_check['variable'].value          = thread_item.enabled
-  $autoDL_dir_label['textvariable'].value   = thread_item.save_dir_display
+  
+  # Save directory
+  save_path = $settings['save_directories'][thread_item.url]
+  save_dir_display = (save_path) ? File.split(save_path)[1] : ''
+  $autoDL_dir_label['textvariable'].value = save_dir_display
   
   if thread_item.new_posts > 0
     $new_posts_label['foreground'] = '#009900'
@@ -1023,12 +1030,13 @@ $default_save_load_dir = Dir.pwd
 $default_refresh_rate = 3
 $default_popups_enabled = false;
 
-# Hash containing default settings
+# Hash containing default settings. settings.dat should be deleted if this is updated.
 $settings = {
   'save_load_directory' => $default_save_load_dir,
   'refresh_rate' => $default_refresh_rate,
   'popups_enabled' => $default_popups_enabled,
   'save_file_checksum' => '',
+  'save_directories' => {}, # Format {thread url: directory string}
   'proxy_url' => ''
 }
 

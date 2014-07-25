@@ -4,7 +4,7 @@
 =end
 
 class ThreadItem
-  attr_accessor :replies, :images, :date, :board, :date_added, :title, :url, :new_posts, :enabled, :display_title, :display_color, :deleted, :last_post, :image_urls, :save_dir, :save_dir_display
+  attr_accessor :replies, :images, :date, :board, :date_added, :title, :url, :new_posts, :enabled, :display_title, :display_color, :deleted, :last_post, :image_urls
   
   TITLE_MAX_LENGTH = 65
   
@@ -21,7 +21,6 @@ class ThreadItem
    @deleted = false  # If thread was deleted
    @last_post = ''   # Date of last post
    @image_urls = []  # List of image urls
-   @save_dir = ''    # Location to save images
   end
   
   ### Getter overrides
@@ -78,10 +77,5 @@ class ThreadItem
     end
     
     '#000000'
-  end
-  
-  # Just shows the folder rather than the full path
-  def save_dir_display
-    File.split(@save_dir)[1]
   end
 end

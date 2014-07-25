@@ -51,7 +51,6 @@ class DownloadWorker
     max_size_display = ''
     save_filename = File.basename(file_url)
     save_path = save_location + '/' + save_filename + temp_ext
-    puts "SAVE #{save_path}"
     
     # Proc for determining expected file size
     content_proc = proc{ |total|
