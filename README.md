@@ -6,6 +6,7 @@ External thread watcher for 4chan. Uses 4chan's API.
 
 Version history
 -------
+- 0.5: Add thread image downloader
 - 0.4.1: Fix version label, fix tray icon colors
 - 0.4: Update for new URL API, tray icon changes for new posts
 - 0.3: Mark threads as read, add proxy settings
@@ -21,6 +22,7 @@ Features
 * Enable/disable individual threads from being updated
 * Popup notification window with a thread report
 * Windows version minimizes to tray
+* NEW: Thread image auto downloader syncs all images/webms in a thread to a folder. Set a save directory for the thread to enable. Clear the save directory to disable.
 
 Pre-installation
 --------------

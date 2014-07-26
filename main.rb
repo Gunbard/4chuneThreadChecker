@@ -22,7 +22,7 @@ SAVED_THREADS_FILENAME = 'threads.dat'
 SAVED_SETTINGS_FILENAME = 'settings.dat'
 APPLICATION_TITLE = '4chune Thread Checker'
 APPLICATION_AUTHOR = 'Gunbard (gunbard@gmail.com)'
-APPLICATION_VERSION = 'v0.4.1'
+APPLICATION_VERSION = 'v0.5'
 MIN_REFRESH_RATE = 1
 MAX_REFRESH_RATE = 99999
 ICON_PATH = "#{temp_dir}/icon.ico" # Needs .ico
@@ -781,9 +781,7 @@ def refresh
         close_popup_action.call
       }
     end
-    
-    $download_manager.images
-    
+        
     if current_os == 'windows' && $top_window.state != 'normal'
       # Change tooltip and icon
       update_tray_icon($top_window, "#{new_posts_msg}", ICON_RED_PATH)
