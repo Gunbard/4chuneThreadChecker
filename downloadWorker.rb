@@ -73,6 +73,7 @@ class DownloadWorker
     
       # Mark url as downloading
       @manager.in_progress[file_url] = 1
+      @manager.status_updated
       
       open(file_url, :content_length_proc => content_proc,
       :progress_proc => progress_proc) do |data|
@@ -104,6 +105,7 @@ class DownloadWorker
     
     # Unmark in progress download
     @manager.in_progress.delete(file_url)
+    @manager.status_updated
     
     if errors.length > 0
       # Dump errors

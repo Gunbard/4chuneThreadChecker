@@ -1054,6 +1054,8 @@ refresh_timer.start
 
 # Start download manager
 $download_manager = DownloadManager.new
-#$download_manager.download_url()
+
+# Default downloader status as idle
+$autoDL_status_label['textvariable'].value = 'Idle'
 
 Tk.mainloop

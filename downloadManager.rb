@@ -13,7 +13,7 @@ require_relative 'downloadWorker'
 MAX_WORKERS = 4
 
 class DownloadManager
-  attr_accessor :update_image_urls, :images, :in_progress, :download_queue, :process_threads
+  attr_accessor :update_image_urls, :images, :in_progress, :download_queue, :process_threads, :status_updated
 
   def initialize
     # Thread image urls by thread
@@ -56,11 +56,6 @@ class DownloadManager
     @thread_images[thread_url] = thread_info
   end
   
-  # Debug
-  def images
-    #puts @thread_images.inspect
-  end
-  
   # Goes through the thread url list and adds non-downloaded image urls
   # to the work queue
   def process_threads
@@ -89,11 +84,9 @@ class DownloadManager
           @download_queue.push(work_data)
         end
       end
+      
+     status_updated
     end
-    
-    # DEBUG
-    #@download_queue.push({image_url: 'http://i.4cdn.org/jp/1406235024432.jpg', image_path: ''})
-    #puts "Download queue: #{@download_queue.inspect}"
   end
   
   # Creates workers to do werk
@@ -103,4 +96,14 @@ class DownloadManager
     end
   end
   
+  # Called whenever downloader status is changed
+  def status_updated
+    display_text = 'Idle'
+    
+    if @download_queue.length > 0
+      display_text = "#{@download_queue.length} LEFT"
+    end
+    
+    $autoDL_status_label['textvariable'].value = display_text
+  end
 end
