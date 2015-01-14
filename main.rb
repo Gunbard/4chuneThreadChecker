@@ -8,6 +8,7 @@ require 'json'
 require 'tk'
 require 'htmlentities'
 require 'digest/md5'
+require 'openssl'
 require_relative 'tkcommon'
 require_relative 'threadItem'
 require_relative 'downloadManager'
@@ -991,16 +992,16 @@ def generate_report(thread_data)
 end
 
 # Determines if there's a network connection avaialable
-# NOTE: Assumes Google is always up. ALWAYS.
 def network_is_connected
   begin
     $checking_connection = true
-    if open("http://www.4chan.org")
+    if open("https://www.4chan.org/", {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE})
       $checking_connection = false
       return true
     end
-  rescue
+  rescue Exception => msg
     $checking_connection = false
+    show_msg('Error', "Could not connect.\nReason: \"#{msg}\"", $top_window)
     return false
   end
 end
