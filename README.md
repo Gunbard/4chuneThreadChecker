@@ -6,6 +6,7 @@ External thread watcher for 4chan. Uses 4chan's API.
 
 Version history
 -------
+- 0.5.1: Fix connection failures due to forced HTTPS
 - 0.5: Add thread image downloader
 - 0.4.1: Fix version label, fix tray icon colors
 - 0.4: Update for new URL API, tray icon changes for new posts
